@@ -1,3 +1,9 @@
+## [3.21.1](https://github.com/crimera/piko-newx/compare/v3.21.0...v3.21.1) (2026-09-13)
+
+### 🐛 Bug Fixes
+* **Twitter:** inline download button showing the share icon ([f94e38c](https://github.com/crimera/piko/commit/f94e38c52418e06d607fdd6382caf027ae0e6760))
+* **Twitter - newx:** validate dynamic choice resources ([0c01bf1](https://github.com/crimera/piko/commit/0c01bf1cb8db738d4046eb1602dc2dde56051349))
+
 ## [3.21.0](https://github.com/crimera/piko-newx/compare/v3.20.0...v3.21.0) (2026-09-13)
 
 ### 🐛 Bug Fixes
