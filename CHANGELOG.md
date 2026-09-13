@@ -1,3 +1,11 @@
+## [3.20.0](https://github.com/crimera/piko-newx/compare/v3.19.3...v3.20.0) (2026-09-13)
+
+### ✨ New Features
+* **Twitter - newx:** hide post and reply dividers ([46c7e67](https://github.com/crimera/piko/commit/46c7e6787c7a882485769790e7d8e0e6f6b1d519))
+
+### New Patches
+* **Twitter:** NewX: Hide post dividers
+
 ## [3.19.3](https://github.com/crimera/piko-newx/compare/v3.19.2...v3.19.3) (2026-09-12)
 
 ### 🐛 Bug Fixes
