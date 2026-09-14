@@ -1,3 +1,8 @@
+## [3.23.1](https://github.com/crimera/piko-newx/compare/v3.23.0...v3.23.1) (2026-09-14)
+
+### 🐛 Bug Fixes
+* **Twitter - newx:** restore Ranked Following scroll position ([26874a4](https://github.com/crimera/piko/commit/26874a446554910f744425074d660b4adfdb1148))
+
 ## [3.23.0](https://github.com/crimera/piko-newx/compare/v3.22.0...v3.23.0) (2026-09-14)
 
 ### ✨ New Features
