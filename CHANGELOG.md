@@ -1,3 +1,11 @@
+## [3.23.0](https://github.com/crimera/piko-newx/compare/v3.22.0...v3.23.0) (2026-09-14)
+
+### ✨ New Features
+* **Twitter - newx:** add customizable post menu with hidden items filter ([d80e46c](https://github.com/crimera/piko/commit/d80e46c660806edab1fea5412ddffb3b5c8420f0))
+
+### New Patches
+* **Twitter:** NewX: Customize post menu items
+
 ## [3.22.0](https://github.com/crimera/piko-newx/compare/v3.21.2...v3.22.0) (2026-09-14)
 
 ### 🐛 Bug Fixes
