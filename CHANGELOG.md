@@ -1,3 +1,8 @@
+## [3.23.3](https://github.com/crimera/piko-newx/compare/v3.23.2...v3.23.3) (2026-09-14)
+
+### 🐛 Bug Fixes
+* **Twitter - newx:** preserve thread connectors when hiding dividers ([68170cd](https://github.com/crimera/piko/commit/68170cd326aeb1c3c5e39b3fc66468dda5782d73))
+
 ## [3.23.2](https://github.com/crimera/piko-newx/compare/v3.23.1...v3.23.2) (2026-09-14)
 
 ### 🐛 Bug Fixes
