@@ -1,3 +1,12 @@
+## [3.23.4](https://github.com/crimera/piko-newx/compare/v3.23.3...v3.23.4) (2026-09-16)
+
+### 🐛 Bug Fixes
+* **Twitter - newx:** make restored splash background theme-aware ([84a4a39](https://github.com/crimera/piko/commit/84a4a3996e4b4b7ff58d0391920195a1cffa44b6))
+* **Twitter - newx:** restore twitter blue app icon & splash colors ([e0b50c2](https://github.com/crimera/piko/commit/e0b50c2826ee5f9d16e01fb8540ad3b1bf95ca4e))
+
+### New Patches
+* **Twitter:** NewX: Customize navigation bar
+
 ## [3.24.0](https://github.com/crimera/piko-newx/compare/v3.23.3...v3.24.0) (2026-09-16)
 
 ### ✨ New Features
