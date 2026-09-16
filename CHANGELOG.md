@@ -1,3 +1,8 @@
+## [3.25.1](https://github.com/crimera/piko-newx/compare/v3.25.0...v3.25.1) (2026-09-16)
+
+### 🐛 Bug Fixes
+* **Twitter - newx:** auto-scroll navbar editor ([3ecf15b](https://github.com/crimera/piko/commit/3ecf15b5dca2d5de53c4721d11a8c37c57359af4))
+
 ## [3.25.0](https://github.com/crimera/piko-newx/compare/v3.24.2...v3.25.0) (2026-09-16)
 
 ### 🐛 Bug Fixes
