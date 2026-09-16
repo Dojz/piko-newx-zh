@@ -1,3 +1,8 @@
+## [3.24.2](https://github.com/crimera/piko-newx/compare/v3.24.1...v3.24.2) (2026-09-16)
+
+### 🐛 Bug Fixes
+* **Twitter - newx:** show selected destination icon ([02f91e5](https://github.com/crimera/piko/commit/02f91e57cf21e45b44c7e2c1dabdbacd9a186604))
+
 ## [3.24.1](https://github.com/crimera/piko-newx/compare/v3.24.0...v3.24.1) (2026-09-16)
 
 ### 🐛 Bug Fixes
