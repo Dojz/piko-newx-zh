@@ -1,3 +1,8 @@
+## [3.23.5](https://github.com/crimera/piko-newx/compare/v3.23.4...v3.23.5) (2026-09-16)
+
+### 🐛 Bug Fixes
+* **Twitter - newx:** reduce navbar patch memory usage ([c36262f](https://github.com/crimera/piko/commit/c36262f1af8dfd29d4833452a1caa58fffd80dab))
+
 ## [3.23.4](https://github.com/crimera/piko-newx/compare/v3.23.3...v3.23.4) (2026-09-16)
 
 ### 🐛 Bug Fixes
