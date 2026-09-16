@@ -1,3 +1,11 @@
+## [3.25.0](https://github.com/crimera/piko-newx/compare/v3.24.2...v3.25.0) (2026-09-16)
+
+### 🐛 Bug Fixes
+* **Twitter - newx:** improve navbar editor drag feedback ([ac98563](https://github.com/crimera/piko/commit/ac985637a8d07c42ffb67abdeb2031635b9dc4c6))
+
+### ✨ New Features
+* **Twitter - newx:** overhaul navbar customization ([228171b](https://github.com/crimera/piko/commit/228171b6d9b9a509438009ba93984b60f99e2616))
+
 ## [3.24.2](https://github.com/crimera/piko-newx/compare/v3.24.1...v3.24.2) (2026-09-16)
 
 ### 🐛 Bug Fixes
