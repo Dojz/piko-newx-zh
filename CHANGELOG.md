@@ -1,3 +1,11 @@
+## [3.26.1](https://github.com/crimera/piko-newx/compare/v3.26.0...v3.26.1) (2026-09-17)
+
+### 🐛 Bug Fixes
+* **Twitter - newx:** stabilize drawer choice option IDs across app updates ([95226c8](https://github.com/crimera/piko/commit/95226c86aebea587e97d2dbd5e504fa4407a7290))
+* **Twitter - newx:** dynamically resolve URT repository request in timeline refresh patch ([96245a7](https://github.com/crimera/piko/commit/96245a7f102042cf847837236ad85fd33ef83dbb))
+* **Twitter - newx:** dynamically resolve compose settings row layout for 12.28 ([7bae415](https://github.com/crimera/piko/commit/7bae415ebc05f28daec60a094e4667e58215d9c3))
+* **Twitter - newx:** harden drawer patch fingerprint and close argument resolution ([ac32219](https://github.com/crimera/piko/commit/ac32219b45d0ebad7c83fca4ece0ef3726887079))
+
 ## [3.26.0](https://github.com/crimera/piko-newx/compare/v3.25.1...v3.26.0) (2026-09-17)
 
 ### 🐛 Bug Fixes
