@@ -1,3 +1,11 @@
+## [3.26.0](https://github.com/crimera/piko-newx/compare/v3.25.1...v3.26.0) (2026-09-17)
+
+### 🐛 Bug Fixes
+* **Twitter - newx:** differentiate navigation editor icon ([1ba8355](https://github.com/crimera/piko/commit/1ba8355fa72811eb6a9ab36cee7bff02025d4e4e))
+
+### ✨ New Features
+* **Twitter - newx:** overhaul drawer items customization ([244602b](https://github.com/crimera/piko/commit/244602bdddb581a40a76c989c1172d934dc50ca2))
+
 ## [3.25.1](https://github.com/crimera/piko-newx/compare/v3.25.0...v3.25.1) (2026-09-16)
 
 ### 🐛 Bug Fixes
