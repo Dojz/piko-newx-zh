@@ -1,3 +1,8 @@
+## [3.27.0](https://github.com/crimera/piko-newx/compare/v3.26.2...v3.27.0) (2026-09-18)
+
+### ✨ New Features
+* **Twitter - newx:** hide badges from custom navigation bar items ([6c27e79](https://github.com/crimera/piko/commit/6c27e79dee4e6be5a1bf03e9c85b333f5e14781c))
+
 ## [3.26.2](https://github.com/crimera/piko-newx/compare/v3.26.1...v3.26.2) (2026-09-17)
 
 ### 🐛 Bug Fixes
