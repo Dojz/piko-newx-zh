@@ -1,3 +1,8 @@
+## [3.29.1](https://github.com/crimera/piko-newx/compare/v3.29.0...v3.29.1) (2026-09-19)
+
+### 🐛 Bug Fixes
+* **Twitter:** drop legacy 12.25 targets ([e4a1e2e](https://github.com/crimera/piko/commit/e4a1e2e5026d73277b64b7a65d2d28dc04d69dad))
+
 ## [3.29.0](https://github.com/crimera/piko-newx/compare/v3.28.0...v3.29.0) (2026-09-19)
 
 ### 🐛 Bug Fixes
