@@ -1,3 +1,15 @@
+## [3.28.0](https://github.com/crimera/piko-newx/compare/v3.27.1...v3.28.0) (2026-09-19)
+
+### 🐛 Bug Fixes
+* **Twitter - newx:** share crash log via direct activity intent ([b942d2b](https://github.com/crimera/piko/commit/b942d2b70bf021844aefba092a9469c672789725))
+
+### ✨ New Features
+* **Twitter - newx:** add crash test triggers to developer tools ([5b2b4a4](https://github.com/crimera/piko/commit/5b2b4a456c07063a3710c15b6f988b780ee8d974))
+* **Twitter - newx:** add crash logs with share and copy actions ([5feb43d](https://github.com/crimera/piko/commit/5feb43d3ccf0390405963bad742cdcc0e329e21a))
+
+### New Patches
+* **Twitter:** NewX: Crash logs
+
 ## [3.27.1](https://github.com/crimera/piko-newx/compare/v3.27.0...v3.27.1) (2026-09-18)
 
 ### 🐛 Bug Fixes
