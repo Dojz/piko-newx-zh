@@ -1,3 +1,11 @@
+## [3.30.1](https://github.com/crimera/piko-newx/compare/v3.30.0...v3.30.1) (2026-09-20)
+
+### 🐛 Bug Fixes
+* **Twitter:** Preserve Photos gallery scroll position ([2498fdf](https://github.com/crimera/piko/commit/2498fdfab06b6e61ef71e69080eb1c4e09f1dde3))
+* **Twitter:** NewX Photos gallery pagination ([0a0ad6a](https://github.com/crimera/piko/commit/0a0ad6a88ccd0d278542e4dc7833ff2fcf3b296b))
+* **Twitter:** open full viewer with post context from gallery taps ([1dcd2ff](https://github.com/crimera/piko/commit/1dcd2ff674cceef3082ddae38da8b8b1b1a2d2d3))
+* **Twitter:** open full screen image in gallery view ([fe9c751](https://github.com/crimera/piko/commit/fe9c751721170a06fd7d11e1f3f34fe92453efd3))
+
 ## [3.30.0](https://github.com/crimera/piko-newx/compare/v3.29.1...v3.30.0) (2026-09-20)
 
 ### 🐛 Bug Fixes
