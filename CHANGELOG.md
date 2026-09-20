@@ -1,3 +1,8 @@
+## [3.30.2](https://github.com/crimera/piko-newx/compare/v3.30.1...v3.30.2) (2026-09-20)
+
+### 🐛 Bug Fixes
+* **Twitter:** Use generated ID for Photos gallery state ([cecd779](https://github.com/crimera/piko/commit/cecd779dc83d6bba444f2e0800e08c80652dac75))
+
 ## [3.30.1](https://github.com/crimera/piko-newx/compare/v3.30.0...v3.30.1) (2026-09-20)
 
 ### 🐛 Bug Fixes
