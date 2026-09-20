@@ -1,3 +1,19 @@
+## [3.30.0](https://github.com/crimera/piko-newx/compare/v3.29.1...v3.30.0) (2026-09-20)
+
+### 🐛 Bug Fixes
+* **Twitter:** shrink gallery loading spinner (32dp, 4dp stroke) ([3d3077a](https://github.com/crimera/piko/commit/3d3077ae9cfb76c843f66918f7b35f891f62f2ed))
+* **Twitter:** custom sharing domain patch support for 12.28 alpha 4 ([d109ef7](https://github.com/crimera/piko/commit/d109ef768eb376dd44f8eec1a2a91eb568790b0f))
+* **Twitter:** resolve reply bar renderer across test-tag relocation ([99a39dd](https://github.com/crimera/piko/commit/99a39ddca08d86e2380b5ed0f00c5787645704a2))
+* **Twitter:** accept hoisted divider lambda in module divider matcher ([513d36b](https://github.com/crimera/piko/commit/513d36bc409bca8735c8de28b1082fd2457a6701))
+* **Twitter:** derive gallery photo navigation from call graph ([61ad517](https://github.com/crimera/piko/commit/61ad5176fef904dc3f351bc34851e266d7d9a792))
+* **Twitter:** match inline-action renderer semantically, resolve slots dynamically ([b1fe23a](https://github.com/crimera/piko/commit/b1fe23a9aab7393b62225abf08e4e7884c5b5b63))
+* **Twitter:** reserve explicit registers for inline-actions setting read ([7772b6e](https://github.com/crimera/piko/commit/7772b6e0b59343a733e07a81e81222cf9d0da2d5))
+* **Twitter:** add bounded gallery thumbnail cache with developer stats screen ([f7377af](https://github.com/crimera/piko/commit/f7377afe26c7ee605fdb7002f0959357d466919e))
+* **Twitter:** route profile photo pagination to bottom paginator ([a5855d4](https://github.com/crimera/piko/commit/a5855d400454ec9e533ae3eba01afa3ad09cb2ad))
+
+### ✨ New Features
+* **Twitter:** experimental support for 12.28.0-alpha.04 ([8e97eae](https://github.com/crimera/piko/commit/8e97eae57a18d6865d61661fed71c1dd4a07d231))
+
 ## [3.29.1](https://github.com/crimera/piko-newx/compare/v3.29.0...v3.29.1) (2026-09-19)
 
 ### 🐛 Bug Fixes
