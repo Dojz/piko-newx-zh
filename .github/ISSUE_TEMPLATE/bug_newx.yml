@@ -1,6 +1,6 @@
 name: "🐞 NewX bug"
 description: Report a reproducible NewX (X/Twitter) bug.
-title: "bug(NewX): "
+title: "bug: "
 labels: ["bug", "twitter"]
 body:
   - type: markdown

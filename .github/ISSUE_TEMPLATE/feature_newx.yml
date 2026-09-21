@@ -1,6 +1,6 @@
 name: "⭐ NewX feature"
 description: Request a NewX (X/Twitter) feature.
-title: "feature(NewX): "
+title: "feat: "
 labels: ["enhancement", "twitter"]
 body:
   - type: markdown
