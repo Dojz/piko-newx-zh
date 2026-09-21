@@ -1,3 +1,8 @@
+## [3.30.4](https://github.com/crimera/piko-newx/compare/v3.30.3...v3.30.4) (2026-09-21)
+
+### 🐛 Bug Fixes
+* **Twitter:** paginate Photos gallery when first page underfills viewport ([66e2e1c](https://github.com/crimera/piko/commit/66e2e1c3dac43b52e197ac88c2d7878a7fd215ad))
+
 ## [3.30.3](https://github.com/crimera/piko-newx/compare/v3.30.2...v3.30.3) (2026-09-21)
 
 ### 🐛 Bug Fixes
