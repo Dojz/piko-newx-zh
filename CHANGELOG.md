@@ -1,3 +1,8 @@
+## [3.31.0](https://github.com/crimera/piko-newx/compare/v3.30.4...v3.31.0) (2026-09-21)
+
+### ✨ New Features
+* **Twitter - newx:** long press inline download to download all media ([5888f3a](https://github.com/crimera/piko/commit/5888f3a40b4bad9318d2c3d0aa94755886f9116c))
+
 ## [3.30.4](https://github.com/crimera/piko-newx/compare/v3.30.3...v3.30.4) (2026-09-21)
 
 ### 🐛 Bug Fixes
