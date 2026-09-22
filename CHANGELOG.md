@@ -1,3 +1,8 @@
+## [3.33.0](https://github.com/crimera/piko-newx/compare/v3.32.0...v3.33.0) (2026-09-22)
+
+### ✨ New Features
+* **Twitter:** add support for 12.28.0-prod.01 ([f77d602](https://github.com/crimera/piko/commit/f77d6029120c16c298eb54cc001599de444c216a))
+
 ## [3.32.0](https://github.com/crimera/piko-newx/compare/v3.31.0...v3.32.0) (2026-09-22)
 
 ### 🐛 Bug Fixes
