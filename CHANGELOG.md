@@ -1,3 +1,8 @@
+## [3.33.1](https://github.com/crimera/piko-newx/compare/v3.33.0...v3.33.1) (2026-09-22)
+
+### 🐛 Bug Fixes
+* **Twitter - newx:** rename inline download template token to userName ([c0dd037](https://github.com/crimera/piko/commit/c0dd037aa96ce20b538b523d2af5baae58890e67))
+
 ## [3.33.0](https://github.com/crimera/piko-newx/compare/v3.32.0...v3.33.0) (2026-09-22)
 
 ### ✨ New Features
