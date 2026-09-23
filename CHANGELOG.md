@@ -1,3 +1,8 @@
+## [3.35.0](https://github.com/crimera/piko-newx/compare/v3.34.1...v3.35.0) (2026-09-23)
+
+### ✨ New Features
+* **Twitter:** add inline download resolution chooser and quality preferences ([dbade44](https://github.com/crimera/piko/commit/dbade44644d2fbb3490a6d79788f4c4455abc80c))
+
 ## [3.34.1](https://github.com/crimera/piko-newx/compare/v3.34.0...v3.34.1) (2026-09-23)
 
 ### 🐛 Bug Fixes
