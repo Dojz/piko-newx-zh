@@ -1,3 +1,8 @@
+## [3.34.1](https://github.com/crimera/piko-newx/compare/v3.34.0...v3.34.1) (2026-09-23)
+
+### 🐛 Bug Fixes
+* **Twitter:** newx dim theme chrome backgrounds ([a6af4dc](https://github.com/crimera/piko/commit/a6af4dce4184cea0b5c646eacaa3f2e1f2973667))
+
 ## [3.34.0](https://github.com/crimera/piko-newx/compare/v3.33.1...v3.34.0) (2026-09-23)
 
 ### 🐛 Bug Fixes
