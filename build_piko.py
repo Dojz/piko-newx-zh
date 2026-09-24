@@ -331,10 +331,9 @@ def build_piko_patches(
         )
 
         pre_build_cleanup(piko_directory)
-        apply_source_overlays(piko_directory)
-        install_instagram_screen_translate_button(piko_directory)
-        install_instagram_ui_settings(piko_directory)
-        install_instagram_custom_strings(piko_directory)
+        # Keep the zh-CN fork stable: experimental Instagram UI hooks are
+        # intentionally not applied here. They are retained in-repo only for
+        # development until their native Litho/translation hooks are ready.
         apply_zh_cn(piko_directory)
 
         if patch_version is not None:
