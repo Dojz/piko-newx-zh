@@ -319,4 +319,12 @@
     <string name="piko_filter_story_minimum_item_count_desc">少于 x 条内容的快拍将被隐藏（默认 1）</string>
     <string name="piko_filter_story_maximum_item_count">最多快拍数量</string>
     <string name="piko_filter_story_maximum_item_count_desc">多于 x 条内容的快拍将被隐藏（默认 9999）</string>
+
+    <!-- zh-CN fork UI controls -->
+    <string name="piko_zh_show_top_translate_button">顶部全屏翻译按钮</string>
+    <string name="piko_zh_comment_translate_menu">评论区加号翻译菜单</string>
+    <string name="piko_zh_show_quick_download_button">快捷下载按钮</string>
+    <string name="piko_zh_translate_visible">翻译当前屏幕</string>
+    <string name="piko_zh_camera">拍照</string>
+    <string name="piko_zh_comment_plus">更多</string>
 </resources>

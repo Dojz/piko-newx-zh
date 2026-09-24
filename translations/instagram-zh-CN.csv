@@ -276,3 +276,4 @@ Note: On a clean install, the \'Tip\' animation may appear but will stop on its 
 "piko_filter_story_minimum_item_count_desc","Stories having less than x items will be hidden (default 1)","少于 x 条内容的快拍将被隐藏（默认 1）"
 "piko_filter_story_maximum_item_count","Maximum story items","最多快拍数量"
 "piko_filter_story_maximum_item_count_desc","Stories having more than x items will be hidden (default 9999)","多于 x 条内容的快拍将被隐藏（默认 9999）"
+piko_zh_show_top_translate_button,"Top full-screen translate button","顶部全屏翻译按钮"\npiko_zh_comment_translate_menu,"Comment plus translation menu","评论区加号翻译菜单"\npiko_zh_show_quick_download_button,"Quick download button","快捷下载按钮"\npiko_zh_translate_visible,"Translate visible screen","翻译当前屏幕"\npiko_zh_camera,"Camera","拍照"\npiko_zh_comment_plus,"More","更多"\n

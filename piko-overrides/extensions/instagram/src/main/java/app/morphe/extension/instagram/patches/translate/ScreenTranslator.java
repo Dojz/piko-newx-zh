@@ -1,23 +1,17 @@
 /*
- * Simplified Chinese fork addition for Piko Instagram.
- * Uses Instagram's own visible "See translation" controls instead of a third-party API.
+ * Piko zh-CN: translate all currently visible native Instagram translation actions.
  */
 package app.morphe.extension.instagram.patches.translate;
 
 import android.app.Activity;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
-import android.widget.TextView;
+import android.view.accessibility.AccessibilityNodeInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -27,49 +21,51 @@ import app.morphe.extension.shared.Utils;
 
 public final class ScreenTranslator {
     private static final int MAX_VISIBLE_TRANSLATIONS = 30;
-    private static final long CLICK_INTERVAL_MS = 70L;
+    private static final long CLICK_INTERVAL_MS = 90L;
 
-    private static final Set<String> TRANSLATE_LABELS = Collections.unmodifiableSet(
-        new HashSet<>(Arrays.asList(
-            "see translation", "view translation", "translate",
-            "查看翻译", "显示翻译", "翻译",
-            "查看翻譯", "顯示翻譯", "翻譯",
-            "翻訳を見る", "翻訳", "번역 보기",
-            "ver traducción", "voir la traduction", "übersetzung ansehen",
-            "ver tradução", "vedi traduzione", "посмотреть перевод"
-        ))
-    );
+    private static final Set<String> TRANSLATE_LABELS = new HashSet<>(Arrays.asList(
+        "see translation",
+        "view translation",
+        "translate",
+        "查看翻译",
+        "显示翻译",
+        "翻译",
+        "查看翻譯",
+        "顯示翻譯",
+        "翻譯",
+        "翻訳を見る",
+        "翻訳",
+        "번역 보기",
+        "ver traducción",
+        "voir la traduction",
+        "übersetzung ansehen",
+        "ver tradução",
+        "vedi traduzione",
+        "посмотреть перевод"
+    ));
 
     private ScreenTranslator() {}
 
     public static void translateVisibleScreen() {
         try {
             final Activity activity = Utils.getActivity();
-            if (activity == null || activity.getWindow() == null) {
-                Utils.showToastShort("当前屏幕没有可翻译内容");
-                return;
-            }
+            if (activity == null || activity.getWindow() == null) return;
+
             activity.runOnUiThread(() -> {
                 try {
-                    View root = activity.getWindow().getDecorView();
-                    List<View> targets = new ArrayList<>();
-                    Set<View> seenTargets = Collections.newSetFromMap(new IdentityHashMap<View, Boolean>());
-                    collectTranslationTargets(root, targets, seenTargets);
-                    if (targets.isEmpty()) {
-                        Utils.showToastShort("当前屏幕没有可翻译内容");
-                        return;
-                    }
-                    Utils.showToastShort("正在翻译当前屏幕的 " + targets.size() + " 项内容");
+                    View rootView = activity.getWindow().getDecorView();
+                    AccessibilityNodeInfo root = rootView.createAccessibilityNodeInfo();
+                    if (root == null) return;
+
+                    List<AccessibilityNodeInfo> targets = new ArrayList<>();
+                    Set<String> seen = new HashSet<>();
+                    collectTranslationTargets(root, targets, seen);
+
                     Handler handler = new Handler(Looper.getMainLooper());
-                    for (int i = 0; i < targets.size(); i++) {
-                        final View target = targets.get(i);
-                        handler.postDelayed(() -> {
-                            try {
-                                if (target.isShown() && target.isEnabled()) target.performClick();
-                            } catch (Exception e) {
-                                Logger.printException(() -> "Screen translation click failed", e);
-                            }
-                        }, i * CLICK_INTERVAL_MS);
+                    int limit = Math.min(MAX_VISIBLE_TRANSLATIONS, targets.size());
+                    for (int i = 0; i < limit; i++) {
+                        final AccessibilityNodeInfo target = targets.get(i);
+                        handler.postDelayed(() -> performClick(target), i * CLICK_INTERVAL_MS);
                     }
                 } catch (Exception e) {
                     Logger.printException(() -> "Screen translation failed", e);
@@ -80,62 +76,124 @@ public final class ScreenTranslator {
         }
     }
 
-    private static void collectTranslationTargets(View view, List<View> targets, Set<View> seenTargets) {
-        if (view == null || targets.size() >= MAX_VISIBLE_TRANSLATIONS || !isVisible(view)) return;
-        if (isNativeTranslationControl(view)) {
-            View clickable = findClickableTarget(view);
-            if (clickable != null && seenTargets.add(clickable)) {
-                targets.add(clickable);
-                if (targets.size() >= MAX_VISIBLE_TRANSLATIONS) return;
+    public static boolean clickVisibleText(String... labels) {
+        try {
+            final Activity activity = Utils.getActivity();
+            if (activity == null || activity.getWindow() == null) return false;
+            AccessibilityNodeInfo root = activity.getWindow().getDecorView().createAccessibilityNodeInfo();
+            if (root == null) return false;
+
+            Set<String> normalizedLabels = new HashSet<>();
+            for (String label : labels) {
+                if (label != null && !label.isEmpty()) normalizedLabels.add(normalize(label));
             }
-        }
-        if (view instanceof ViewGroup) {
-            ViewGroup group = (ViewGroup) view;
-            for (int i = 0; i < group.getChildCount(); i++) {
-                collectTranslationTargets(group.getChildAt(i), targets, seenTargets);
-                if (targets.size() >= MAX_VISIBLE_TRANSLATIONS) return;
-            }
+            AccessibilityNodeInfo match = findFirstByText(root, normalizedLabels);
+            return match != null && performClick(match);
+        } catch (Exception e) {
+            Logger.printException(() -> "Accessibility text click failed", e);
+            return false;
         }
     }
 
-    private static boolean isVisible(View view) {
-        if (view.getVisibility() != View.VISIBLE || !view.isShown()) return false;
-        Rect rect = new Rect();
-        return view.getGlobalVisibleRect(rect) && rect.width() > 0 && rect.height() > 0;
+    private static void collectTranslationTargets(
+        AccessibilityNodeInfo node,
+        List<AccessibilityNodeInfo> targets,
+        Set<String> seen
+    ) {
+        if (node == null || targets.size() >= MAX_VISIBLE_TRANSLATIONS) return;
+
+        if (matchesTranslationNode(node)) {
+            AccessibilityNodeInfo clickable = findClickableNode(node);
+            if (clickable != null) {
+                String key = nodeKey(clickable);
+                if (seen.add(key)) targets.add(clickable);
+            }
+        }
+
+        for (int i = 0; i < node.getChildCount() && targets.size() < MAX_VISIBLE_TRANSLATIONS; i++) {
+            AccessibilityNodeInfo child = node.getChild(i);
+            if (child != null) collectTranslationTargets(child, targets, seen);
+        }
     }
 
-    private static boolean isNativeTranslationControl(View view) {
-        if (view instanceof TextView && matchesTranslationLabel(((TextView) view).getText())) return true;
-        if (matchesTranslationLabel(view.getContentDescription())) return true;
-        int id = view.getId();
-        if (id != View.NO_ID) {
-            try {
-                String name = view.getResources().getResourceEntryName(id).toLowerCase(Locale.ROOT);
-                boolean translationName = name.contains("translation") || name.contains("translate");
-                boolean actionName = name.contains("button") || name.contains("cta") || name.contains("see_");
-                return translationName && actionName;
-            } catch (Exception ignored) {}
+    private static AccessibilityNodeInfo findFirstByText(
+        AccessibilityNodeInfo node,
+        Set<String> labels
+    ) {
+        if (node == null) return null;
+        if (matchesAny(node.getText(), labels) || matchesAny(node.getContentDescription(), labels)) {
+            AccessibilityNodeInfo clickable = findClickableNode(node);
+            if (clickable != null) return clickable;
         }
+        for (int i = 0; i < node.getChildCount(); i++) {
+            AccessibilityNodeInfo child = node.getChild(i);
+            AccessibilityNodeInfo result = findFirstByText(child, labels);
+            if (result != null) return result;
+        }
+        return null;
+    }
+
+    private static boolean matchesTranslationNode(AccessibilityNodeInfo node) {
+        if (matchesTranslate(node.getText()) || matchesTranslate(node.getContentDescription())) {
+            return true;
+        }
+        try {
+            String viewId = node.getViewIdResourceName();
+            if (viewId != null) {
+                String lower = viewId.toLowerCase(Locale.ROOT);
+                return lower.contains("translate") || lower.contains("translation");
+            }
+        } catch (Exception ignored) {}
         return false;
     }
 
-    private static boolean matchesTranslationLabel(CharSequence value) {
-        if (value == null) return false;
-        String normalized = value.toString()
+    private static boolean matchesTranslate(CharSequence value) {
+        return value != null && TRANSLATE_LABELS.contains(normalize(value.toString()));
+    }
+
+    private static boolean matchesAny(CharSequence value, Set<String> labels) {
+        return value != null && labels.contains(normalize(value.toString()));
+    }
+
+    private static String normalize(String value) {
+        return value
             .replace('\u00A0', ' ')
             .trim()
             .toLowerCase(Locale.ROOT)
             .replaceAll("\\s+", " ");
-        return TRANSLATE_LABELS.contains(normalized);
     }
 
-    private static View findClickableTarget(View view) {
-        View current = view;
-        for (int depth = 0; depth < 4 && current != null; depth++) {
-            if (current.isClickable() && current.isEnabled()) return current;
-            ViewParent parent = current.getParent();
-            current = parent instanceof View ? (View) parent : null;
+    private static AccessibilityNodeInfo findClickableNode(AccessibilityNodeInfo node) {
+        AccessibilityNodeInfo current = node;
+        for (int depth = 0; depth < 5 && current != null; depth++) {
+            if (current.isVisibleToUser() && current.isEnabled() && current.isClickable()) {
+                return current;
+            }
+            current = current.getParent();
         }
-        return null;
+        return node.isVisibleToUser() && node.isEnabled() ? node : null;
+    }
+
+    private static boolean performClick(AccessibilityNodeInfo node) {
+        try {
+            AccessibilityNodeInfo current = node;
+            for (int depth = 0; depth < 5 && current != null; depth++) {
+                if (current.isVisibleToUser() && current.isEnabled()
+                    && current.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
+                    return true;
+                }
+                current = current.getParent();
+            }
+        } catch (Exception e) {
+            Logger.printException(() -> "Accessibility click failed", e);
+        }
+        return false;
+    }
+
+    private static String nodeKey(AccessibilityNodeInfo node) {
+        android.graphics.Rect rect = new android.graphics.Rect();
+        node.getBoundsInScreen(rect);
+        return String.valueOf(node.getViewIdResourceName()) + "|" + rect.toShortString()
+            + "|" + String.valueOf(node.getText()) + "|" + String.valueOf(node.getContentDescription());
     }
 }

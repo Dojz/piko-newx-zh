@@ -68,21 +68,35 @@ def apply_source_overlays(piko_directory: Path) -> None:
 
 
 def install_instagram_screen_translate_button(piko_directory: Path) -> None:
-    """Add one native-styled full-screen translate icon to Instagram action bars."""
+    """Install zh-CN Instagram UI enhancements and their three opt-in switches."""
     path = piko_directory / INSTAGRAM_ACTIONBAR
     text = path.read_text(encoding="utf-8")
 
     import_anchor = "import app.morphe.extension.instagram.constants.Constants;\n"
-    import_line = "import app.morphe.extension.instagram.patches.translate.ScreenTranslator;\n"
-    if import_line not in text:
+    imports = (
+        "import app.morphe.extension.instagram.patches.translate.ScreenTranslator;\n"
+        "import app.morphe.extension.instagram.patches.translate.UiFeaturePrefs;\n"
+        "import app.morphe.extension.instagram.patches.translate.InstagramUiEnhancements;\n"
+    )
+    if "InstagramUiEnhancements;" not in text:
         if import_anchor not in text:
             raise ValueError("Instagram ActionBarPatch import anchor changed upstream")
-        text = text.replace(import_anchor, import_anchor + import_line, 1)
+        text = text.replace(import_anchor, import_anchor + imports, 1)
 
     helper = """
-    private static void addScreenTranslateButton(ViewGroup viewGroup) {
+    private static void installZhUiEnhancements(ViewGroup viewGroup) {
         if (viewGroup == null) {
             return;
+        }
+        InstagramUiEnhancements.install(viewGroup);
+        if (!UiFeaturePrefs.showTopTranslateButton()) {
+            return;
+        }
+        for (int i = 0; i < viewGroup.getChildCount(); i++) {
+            CharSequence description = viewGroup.getChildAt(i).getContentDescription();
+            if (description != null && description.toString().equals("piko_zh_screen_translate")) {
+                return;
+            }
         }
         ImageView imageView = UI.addImageViewToViewGroup(
             viewGroup,
@@ -90,29 +104,115 @@ def install_instagram_screen_translate_button(piko_directory: Path) -> None:
             ScreenTranslator::translateVisibleScreen
         );
         if (imageView != null) {
-            imageView.setContentDescription("全屏翻译");
+            imageView.setContentDescription("piko_zh_screen_translate");
         }
     }
 
 """
     class_anchor = "public class ActionBarPatch {\n"
-    if "private static void addScreenTranslateButton" not in text:
+    if "private static void installZhUiEnhancements" not in text:
         if class_anchor not in text:
             raise ValueError("Instagram ActionBarPatch class anchor changed upstream")
         text = text.replace(class_anchor, class_anchor + helper, 1)
 
-    for method in (
-        "mainFeedActionBarButton",
-        "userProfileActionBarButton",
-        "chatActionBarButton",
-        "inboxActionBarButton",
-    ):
-        pattern = rf"(public static void {method}\([^)]*\)\s*\{{\s*try\s*\{{)"
-        replacement = r"\1\n            addScreenTranslateButton(viewGroup);"
-        text, count = re.subn(pattern, replacement, text, count=1, flags=re.DOTALL)
-        if count != 1:
-            raise ValueError(f"Instagram ActionBarPatch method changed upstream: {method}")
+    pattern = r"(public static void mainFeedActionBarButton\([^)]*\)\s*\{\s*try\s*\{)"
+    replacement = r"\1\n            installZhUiEnhancements(viewGroup);"
+    text, count = re.subn(pattern, replacement, text, count=1, flags=re.DOTALL)
+    if count != 1:
+        raise ValueError("Instagram main feed ActionBarPatch method changed upstream")
 
+    path.write_text(text, encoding="utf-8")
+
+
+def install_instagram_ui_settings(piko_directory: Path) -> None:
+    """Add the three zh-CN-only switches, all disabled by default."""
+    path = (
+        piko_directory
+        / "extensions/instagram/src/main/java/app/morphe/extension/instagram/settings/preference/ScreenBuilder.java"
+    )
+    text = path.read_text(encoding="utf-8")
+
+    import_anchor = "import app.morphe.extension.instagram.utils.Pref;\n"
+    import_line = "import app.morphe.extension.instagram.patches.translate.UiFeaturePrefs;\n"
+    if import_line not in text:
+        if import_anchor not in text:
+            raise ValueError("Instagram ScreenBuilder import anchor changed upstream")
+        text = text.replace(import_anchor, import_anchor + import_line, 1)
+
+    misc_anchor = """    public void buildMiscSection() {
+        if (!(SettingsStatus.miscSection())) return;
+
+"""
+    misc_insert = """    public void buildMiscSection() {
+        if (!(SettingsStatus.miscSection())) return;
+
+        addPreference(
+                helper.switchPreference(
+                        str("piko_zh_show_top_translate_button"),
+                        "",
+                        UiFeaturePrefs.SHOW_TOP_TRANSLATE_BUTTON
+                )
+        );
+        addPreference(
+                helper.switchPreference(
+                        str("piko_zh_comment_translate_menu"),
+                        "",
+                        UiFeaturePrefs.COMMENT_TRANSLATE_MENU
+                )
+        );
+
+"""
+    if "UiFeaturePrefs.SHOW_TOP_TRANSLATE_BUTTON" not in text:
+        if misc_anchor not in text:
+            raise ValueError("Instagram ScreenBuilder misc anchor changed upstream")
+        text = text.replace(misc_anchor, misc_insert, 1)
+
+    download_anchor = """    public void buildDownloadSection() {
+        if (!SettingsStatus.downloadSection()) return;
+
+"""
+    download_insert = """    public void buildDownloadSection() {
+        if (!SettingsStatus.downloadSection()) return;
+
+        addPreference(
+                helper.switchPreference(
+                        str("piko_zh_show_quick_download_button"),
+                        "",
+                        UiFeaturePrefs.SHOW_QUICK_DOWNLOAD_BUTTON
+                )
+        );
+
+"""
+    if "UiFeaturePrefs.SHOW_QUICK_DOWNLOAD_BUTTON" not in text:
+        if download_anchor not in text:
+            raise ValueError("Instagram ScreenBuilder download anchor changed upstream")
+        text = text.replace(download_anchor, download_insert, 1)
+
+    path.write_text(text, encoding="utf-8")
+
+
+def install_instagram_custom_strings(piko_directory: Path) -> None:
+    """Add default-language strings for the zh-CN fork-only controls."""
+    path = (
+        piko_directory
+        / "patches/src/main/resources/addresources/values/instagram/strings.xml"
+    )
+    text = path.read_text(encoding="utf-8")
+    if 'name="piko_zh_show_top_translate_button"' in text:
+        return
+
+    extra = """
+    <!-- zh-CN fork UI controls -->
+    <string name="piko_zh_show_top_translate_button">Top full-screen translate button</string>
+    <string name="piko_zh_comment_translate_menu">Comment plus translation menu</string>
+    <string name="piko_zh_show_quick_download_button">Quick download button</string>
+    <string name="piko_zh_translate_visible">Translate visible screen</string>
+    <string name="piko_zh_camera">Camera</string>
+    <string name="piko_zh_comment_plus">More</string>
+"""
+    if "</resources>" not in text:
+        raise ValueError("Instagram strings.xml has no resources closing tag")
+    text = text.replace("</resources>", extra + "</resources>", 1)
     path.write_text(text, encoding="utf-8")
 
 
@@ -233,6 +333,8 @@ def build_piko_patches(
         pre_build_cleanup(piko_directory)
         apply_source_overlays(piko_directory)
         install_instagram_screen_translate_button(piko_directory)
+        install_instagram_ui_settings(piko_directory)
+        install_instagram_custom_strings(piko_directory)
         apply_zh_cn(piko_directory)
 
         if patch_version is not None:
