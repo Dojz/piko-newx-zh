@@ -133,17 +133,21 @@ def write_patches_bundle(
     app_version: str,
     piko_build: PikoBuild,
     repo: str = REPO,
+    signature_available: bool = False,
 ) -> None:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
     metadata = {
         "version": release_tag,
         "download_url": f"https://github.com/{repo}/releases/download/{release_tag}/patches.mpp",
         "created_at": now,
-        "description": f"Piko x-lite patch bundle for Morphe ({release_tag}).",
-        "signature_download_url": f"https://github.com/{repo}/releases/download/{release_tag}/patches.mpp.asc",
+        "description": f"Piko NewX 简体中文 patch bundle for Morphe ({release_tag}).",
         "app_version": app_version,
         "piko_commit": piko_build.commit,
     }
+    if signature_available:
+        metadata["signature_download_url"] = (
+            f"https://github.com/{repo}/releases/download/{release_tag}/patches.mpp.asc"
+        )
     Path(PATCHES_BUNDLE_FILE).write_text(
         json.dumps(metadata, indent=2) + "\n",
         encoding="utf-8",
@@ -255,7 +259,12 @@ def process(
         message,
         release_tag,
     )
-    write_patches_bundle(release_tag, app_version, piko_build)
+    write_patches_bundle(
+        release_tag,
+        app_version,
+        piko_build,
+        signature_available=signature is not None,
+    )
 
 
 def should_publish(

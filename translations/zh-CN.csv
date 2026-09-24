@@ -1,0 +1,432 @@
+resource_key,English,简体中文
+piko_newx_settings_title,Piko Settings,Piko 设置
+piko_newx_settings_ok,OK,确定
+piko_newx_settings_cancel,Cancel,取消
+piko_newx_patch_version,Piko %s,Piko %s
+piko_newx_settings_open_failed,Could not open Piko NewX settings,无法打开 Piko NewX 设置
+piko_newx_category_timeline_title,Timeline,时间线
+piko_newx_category_timeline_summary,Manage timeline behavior and appearance,管理时间线的行为和显示
+piko_newx_category_content_title,Content,内容
+piko_newx_category_content_summary,"Control promotions, recommendations, sensitive media, and filters",管理推广、推荐、敏感媒体和过滤规则
+piko_newx_category_appearance_title,Appearance,外观
+piko_newx_category_appearance_summary,Customize colors and fonts,自定义颜色和字体
+piko_newx_category_post_actions_media_title,Posts and media,帖子与媒体
+piko_newx_category_post_actions_media_summary,"Customize post actions, replies, media tabs, downloads, and sharing",自定义帖子操作、回复、媒体标签、下载和分享
+piko_newx_category_navigation_title,Navigation,导航
+piko_newx_category_navigation_summary,Customize navigation bar and drawer items,自定义导航栏和侧边栏项目
+piko_newx_category_advanced_title,Advanced,高级
+piko_newx_category_advanced_summary,"Power-user tools, debugging, and settings maintenance",高级工具、调试和设置维护
+piko_newx_backup_restore_title,Backup and restore,备份与恢复
+piko_newx_backup_restore_summary,Save or restore your Piko NewX settings,保存或恢复 Piko NewX 设置
+piko_newx_disable_timeline_refresh_title,Disable automatic timeline refresh,禁止时间线自动刷新
+piko_newx_disable_timeline_refresh_summary,Prevents timeline jumps when NewX starts or returns to the foreground,防止 NewX 启动或返回前台时刷新并跳动时间线
+piko_newx_restore_timeline_position_title,Restore timeline position,恢复时间线位置
+piko_newx_restore_timeline_position_summary,Returns to saved For You and Following positions after the app restarts,应用重启后返回已保存的“为你推荐”和“正在关注”位置
+piko_newx_restore_profile_position_title,Restore profile scroll position,恢复个人资料滚动位置
+piko_newx_restore_profile_position_summary,"Restores each profile tab to its own saved position, keyed by profile",按个人资料分别恢复各标签页已保存的滚动位置
+piko_newx_hide_spaces_bar_title,Hide Spaces bar,隐藏 Spaces 栏
+piko_newx_hide_spaces_bar_summary,Hides the Spaces bar above NewX timelines,隐藏 NewX 时间线上方的 Spaces 栏
+piko_newx_hide_new_post_pill_title,Hide new posts pill,隐藏“有新帖子”提示
+piko_newx_hide_new_post_pill_summary,Hides the pill that appears when newer posts are available,隐藏有更新帖子时出现的提示胶囊
+piko_newx_hide_new_post_button_title,Hide compose button,隐藏发帖按钮
+piko_newx_hide_new_post_button_summary,Removes the compose (new-post) button from NewX timelines,从 NewX 时间线移除发帖按钮
+piko_newx_hide_post_dividers_title,Hide post and thread dividers,隐藏帖子和对话分隔线
+piko_newx_hide_post_dividers_summary,Removes dividers between posts and thread replies in NewX timelines,移除 NewX 时间线中帖子及回复之间的分隔线
+piko_newx_filter_promoted_posts_title,Filter promoted posts,过滤推广帖子
+piko_newx_filter_promoted_posts_summary,Removes promoted posts and promoted timeline modules,移除推广帖子和推广时间线模块
+piko_newx_hide_who_to_follow_title,Hide who to follow,隐藏“推荐关注”
+piko_newx_hide_who_to_follow_summary,Removes recommended-user sections from timelines and profile pages,移除时间线和个人资料页中的推荐用户区域
+piko_newx_hide_discover_more_title,Hide Discover more,隐藏“发现更多”
+piko_newx_hide_discover_more_summary,Removes the Discover more section from post-detail timelines,移除帖子详情时间线中的“发现更多”区域
+piko_newx_hide_post_reply_bar_title,Hide post reply bar,隐藏帖子回复栏
+piko_newx_hide_post_reply_bar_summary,Hides the persistent reply bar in post details while keeping the compose button available,隐藏帖子详情页常驻回复栏，同时保留发帖按钮
+piko_newx_hide_ai_generated_posts_title,Hide AI-generated posts,隐藏 AI 生成的帖子
+piko_newx_hide_ai_generated_posts_summary,Hides selected AI-generated posts from NewX timelines,从 NewX 时间线隐藏所选类型的 AI 生成帖子
+piko_newx_hide_grok_title,Hide Grok buttons,隐藏 Grok 按钮
+piko_newx_hide_grok_summary,"Removes Grok buttons from posts, post details, and profile headers",移除帖子、帖子详情和个人资料页中的 Grok 按钮
+piko_newx_hide_ai_generated_posts_user_marked,User-marked,用户标记
+piko_newx_hide_ai_generated_posts_auto_detected,Automatically detected,自动检测
+piko_newx_hide_ai_generated_posts_source_not_identified,AI source not identified,AI 来源未识别
+piko_newx_show_sensitive_media_title,Show sensitive media,直接显示敏感媒体
+piko_newx_show_sensitive_media_summary,Shows sensitive media without requiring confirmation,无需确认即可显示敏感媒体
+piko_newx_show_poll_results_title,Show poll results without voting,未投票也显示投票结果
+piko_newx_show_poll_results_summary,Shows poll percentages before you vote when results are available,有结果时，在投票前显示各选项百分比
+piko_newx_default_reply_sorting_title,Default reply sorting,默认回复排序
+piko_newx_default_reply_sorting_summary,"Default reply-sort order for tweet detail (Relevance, Recency, or Likes)",帖子详情中的默认回复排序方式（相关、最新或点赞最多）
+piko_newx_group_verified_account_filtering_title,Verified account filtering,认证账号过滤
+piko_newx_group_verified_account_filtering_summary,Filter posts by timeline-reported account verification type,按时间线报告的账号认证类型过滤帖子
+piko_newx_group_for_you_filtering_title,For You filtering,“为你推荐”过滤
+piko_newx_group_for_you_filtering_summary,Customize topic filtering and the For You tab selector,自定义主题过滤和“为你推荐”标签选择器
+piko_newx_timeline_tabs_title,Timeline tabs to hide,要隐藏的时间线标签
+piko_newx_timeline_tabs_summary,Choose which home timeline tab is hidden,选择要隐藏的主页时间线标签
+piko_newx_timeline_tabs_show_both,Show both,全部显示
+piko_newx_timeline_tabs_hide_for_you,Hide For You,隐藏“为你推荐”
+piko_newx_timeline_tabs_hide_following,Hide Following,隐藏“正在关注”
+piko_newx_hide_timeline_tabs_title,Hide timeline tabs bar,隐藏时间线标签栏
+piko_newx_hide_timeline_tabs_summary,Removes the For You and Following tabs bar from NewX home timelines,移除 NewX 主页时间线的“为你推荐”和“正在关注”标签栏
+piko_newx_for_you_tab_hook_title,Use custom For You topic selector,使用自定义“为你推荐”主题选择器
+piko_newx_for_you_tab_hook_summary,Opens the custom topic selector from the For You tab instead of the native snooze sheet,点击“为你推荐”标签时打开自定义主题选择器，而不是原生暂停推荐面板
+piko_newx_topic_filtering_title,For You topic filter,“为你推荐”主题过滤
+piko_newx_topic_filtering_summary,Choose topics discovered from X at runtime,选择 X 运行时发现的主题
+piko_newx_topic_filter_enabled_title,Enable topic filtering,启用主题过滤
+piko_newx_topic_filter_enabled_summary,Uses the selected positive topic IDs without native snooze expiration,使用选定的正向主题 ID，不受原生暂停推荐到期时间影响
+piko_newx_topic_filtering_empty,"No topics have been discovered yet. Open the For You timeline, then return here.",尚未发现主题。请先打开“为你推荐”时间线，然后返回此处。
+piko_newx_group_reply_sorting_title,Reply sorting,回复排序
+piko_newx_group_reply_sorting_summary,Customize how replies are sorted in post detail,自定义帖子详情中的回复排序方式
+piko_newx_group_debug_tools_title,Developer tools,开发者工具
+piko_newx_group_debug_tools_summary,Inspect internal NewX data from post menus,从帖子菜单检查 NewX 内部数据
+piko_newx_logging_title,Enable logging,启用日志
+piko_newx_logging_summary,Writes diagnostic NewX messages to the app log,将 NewX 诊断信息写入应用日志
+piko_newx_server_logging_title,Capture server errors,捕获服务器错误
+piko_newx_server_logging_summary,Keeps parsed NewX server errors in memory until they are exported,将解析后的 NewX 服务器错误保存在内存中，直到导出
+piko_newx_save_server_logs_title,Save server logs,保存服务器日志
+piko_newx_save_server_logs_summary,Exports captured server errors to Download/piko-server-logs.txt,将捕获到的服务器错误导出到 Download/piko-server-logs.txt
+piko_newx_crash_app_title,Crash app,使应用崩溃
+piko_newx_crash_app_summary,Immediately crashes the app to test crash logging,立即使应用崩溃，用于测试崩溃日志
+piko_newx_crash_post_option_title,Crash post menu item,帖子菜单崩溃项
+piko_newx_crash_post_option_summary,Adds a crash option to timeline post menus,在时间线帖子菜单中添加一个“崩溃”测试选项
+piko_newx_server_logs_saved,Server logs saved to Download/piko-server-logs.txt,服务器日志已保存到 Download/piko-server-logs.txt
+piko_newx_server_logs_save_failed,Could not save NewX server logs,无法保存 NewX 服务器日志
+piko_newx_reply_sort_relevance,Relevant replies,相关回复
+piko_newx_reply_sort_recency,Recent replies,最新回复
+piko_newx_reply_sort_likes,Most liked replies,点赞最多的回复
+piko_newx_remember_reply_sorting_title,Remember last reply sorting,记住上次回复排序
+piko_newx_remember_reply_sorting_summary,Uses your last selected reply-sort order instead of the default,使用你上次选择的回复排序方式，而不是默认值
+piko_newx_media_tab_default_title,Default media tab,默认媒体标签
+piko_newx_media_tab_default_summary,Default sub-tab shown when opening a profile media tab,打开个人资料媒体页时默认显示的子标签
+piko_newx_gallery_profile_photos_title,Gallery layout for Photos tab,“照片”标签使用图库布局
+piko_newx_gallery_profile_photos_summary,Replaces the profile Photos timeline with a 3-column media gallery,将个人资料的“照片”时间线替换为三列媒体图库
+piko_newx_gallery_cache_stats_title,Media cache stats,媒体缓存统计
+piko_newx_gallery_cache_stats_summary,"Inspect thumbnail disk usage, session hit rates, and clear the cache",查看缩略图磁盘占用、当前会话命中率，并可清除缓存
+piko_newx_gallery_cache_disk_title,Disk cache,磁盘缓存
+piko_newx_gallery_cache_session_title,This session,本次会话
+piko_newx_gallery_cache_limits_title,Limits,限制
+piko_newx_gallery_cache_refresh,Refresh,刷新
+piko_newx_gallery_cache_clear,Clear cache,清除缓存
+piko_newx_gallery_cache_loading,Loading cache stats…,正在加载缓存统计…
+piko_newx_gallery_cache_failed,Could not read the media cache.,无法读取媒体缓存。
+piko_newx_gallery_cache_empty,Cache is empty.,缓存为空。
+piko_newx_gallery_cache_usage,%1$s of %2$s (%3$d%%),%2$s 中已使用 %1$s（%3$d%%）
+piko_newx_gallery_cache_entries,%1$d entries,%1$d 个条目
+piko_newx_gallery_cache_largest,Largest entry: %1$s,最大条目：%1$s
+piko_newx_gallery_cache_oldest,Oldest entry: %1$s,最旧条目：%1$s
+piko_newx_gallery_cache_newest,Newest entry: %1$s,最新条目：%1$s
+piko_newx_gallery_cache_tmp,%1$d temp files pending cleanup,有 %1$d 个临时文件等待清理
+piko_newx_gallery_cache_evicted,Evicted: %1$d entries (%2$s reclaimed),已淘汰：%1$d 个条目（回收 %2$s）
+piko_newx_gallery_cache_hits_memory,Extension memory hits: %1$d,扩展内存命中：%1$d
+piko_newx_gallery_cache_hits_loader,App image-loader hits: %1$d,应用图片加载器命中：%1$d
+piko_newx_gallery_cache_hits_disk,Disk hits: %1$d,磁盘命中：%1$d
+piko_newx_gallery_cache_network,"Network: %1$d loaded (%2$s), %3$d failed",网络：成功加载 %1$d 个（%2$s），失败 %3$d 个
+piko_newx_gallery_cache_persisted,Persisted: %1$d · oversized skipped: %2$d,已持久化：%1$d · 因过大跳过：%2$d
+piko_newx_gallery_cache_memory,Memory cache: %1$d of %2$d KB,内存缓存：%1$d / %2$d KB
+piko_newx_gallery_cache_limits,Disk limit %1$s · entry limit %2$s · response cap %3$s,磁盘上限 %1$s · 条目上限 %2$s · 响应上限 %3$s
+piko_newx_gallery_cache_clear_title,Clear media cache?,清除媒体缓存？
+piko_newx_gallery_cache_clear_message,Removes all cached thumbnails. Images reload from the network on next visit.,删除所有已缓存缩略图。下次查看时图片会重新从网络加载。
+piko_newx_gallery_cache_cleared,Cleared %1$d cached files.,已清除 %1$d 个缓存文件。
+piko_newx_profile_post_sort_default_title,Default profile post sorting,个人资料帖子默认排序
+piko_newx_profile_post_sort_default_summary,Default order shown when opening profile posts (Most recent or Popular),打开个人资料帖子时默认显示的排序（最新或热门）
+piko_newx_profile_post_sort_latest,Most recent,最新
+piko_newx_profile_post_sort_popular,Popular,热门
+piko_newx_force_highest_video_quality_title,Force highest video and audio quality,强制最高视频和音频质量
+piko_newx_force_highest_video_quality_summary,Plays videos and audio at the highest available stream quality without adaptive quality downscaling or network bitrate caps,始终以可用的最高码流质量播放视频和音频，不进行自适应降质或网络码率限制
+piko_newx_disable_video_scrolling_title,Disable video player scrolling,禁止视频播放器上下切换
+piko_newx_disable_video_scrolling_summary,Prevents vertical swipes from advancing to the next video in the NewX player,阻止在 NewX 播放器中通过上下滑动切换到下一个视频
+piko_newx_media_tab_photos,Photos,照片
+piko_newx_media_tab_videos,Videos,视频
+piko_newx_hide_premium_upsell_title,Hide premium upsell,隐藏 Premium 推广
+piko_newx_hide_premium_upsell_summary,Hides the premium upgrade chip from the home top bar,隐藏主页顶部栏中的 Premium 升级入口
+piko_newx_group_dynamic_colors_title,Dynamic colors,动态颜色
+piko_newx_group_dynamic_colors_summary,Customize Material You colors and themed accent behavior,自定义 Material You 颜色及主题强调色行为
+piko_newx_dynamic_color_title,Use dynamic colors,使用动态颜色
+piko_newx_dynamic_color_summary,Uses your system Material You colors throughout NewX and Piko settings.,在 NewX 和 Piko 设置中使用系统 Material You 颜色
+piko_newx_dynamic_color_amoled_title,AMOLED black,AMOLED 纯黑
+piko_newx_dynamic_color_amoled_summary,Uses pure black backgrounds in lights-out mode.,在“熄灯”模式下使用纯黑背景
+piko_newx_dynamic_color_like_title,Theme liked-post icon,为已点赞帖子图标应用主题色
+piko_newx_dynamic_color_like_summary,Uses the dynamic accent for liked posts. Warning: This disables the heart Lottie animation.,已点赞帖子使用动态强调色。注意：这会禁用爱心 Lottie 动画。
+piko_newx_disable_blur_title,Disable Compose blur,禁用 Compose 模糊
+piko_newx_disable_blur_summary,Removes blur from NewX Compose UI while keeping configured background tint and scrim effects,移除 NewX Compose 界面的模糊效果，同时保留已配置的背景着色和遮罩效果
+piko_newx_share_image_title,Share post as image,将帖子分享为图片
+piko_newx_share_image_summary,Adds a rendered-image share action to post menus,在帖子菜单中添加“渲染为图片并分享”的操作
+piko_newx_browse_tweet_object_title,Browse tweet object,查看帖子对象
+piko_newx_browse_tweet_object_summary,Adds a debug option to inspect the tweet object in post menus,在帖子菜单中添加调试选项，用于查看帖子对象数据
+piko_newx_group_inline_download_title,Inline download,内嵌下载
+piko_newx_group_inline_download_summary,Customize the inline media download picker,自定义内嵌媒体下载选择器
+piko_newx_inline_download_button_title,Show inline download button,显示内嵌下载按钮
+piko_newx_inline_download_button_summary,Adds a download button directly below NewX posts,在 NewX 帖子下方直接添加下载按钮
+piko_newx_inline_download_hide_no_media_title,Hide button when no media,无媒体时隐藏按钮
+piko_newx_inline_download_hide_no_media_summary,Only shows the inline download button on posts with downloadable media,仅在帖子包含可下载媒体时显示内嵌下载按钮
+piko_newx_media_picker_copy_link_title,Show copy-link button,显示复制链接按钮
+piko_newx_media_picker_copy_link_summary,Shows a button for copying media URLs in the download media picker,在下载媒体选择器中显示用于复制媒体 URL 的按钮
+piko_newx_media_picker_thumbnails_title,Load media thumbnails,加载媒体缩略图
+piko_newx_media_picker_thumbnails_summary,Loads image previews in the download media picker instead of media type icons,在下载媒体选择器中加载图片预览，而不是仅显示媒体类型图标
+piko_newx_media_picker_merge_button_title,Show merge button,显示合并按钮
+piko_newx_media_picker_merge_button_summary,Shows a button to download and merge split artwork images in the media picker,在媒体选择器中显示用于下载并合并分割插画图片的按钮
+piko_newx_inline_download_image_resolution_title,Photo quality,照片质量
+piko_newx_inline_download_image_resolution_summary,Resolution used when a photo is downloaded without the picker,不打开选择器直接下载照片时使用的分辨率
+piko_newx_inline_download_video_quality_title,Video & GIF quality,视频与 GIF 质量
+piko_newx_inline_download_video_quality_summary,Quality used when a video or GIF is downloaded without the picker,不打开选择器直接下载视频或 GIF 时使用的质量
+piko_newx_inline_download_quality_ask,Ask every time,每次询问
+piko_newx_inline_download_quality_original,Original,原图
+piko_newx_inline_download_quality_4096,4096px,4096px
+piko_newx_inline_download_quality_large,Large,大图
+piko_newx_inline_download_quality_medium,Medium,中等
+piko_newx_inline_download_quality_small,Small,小图
+piko_newx_inline_download_quality_highest,Highest bitrate,最高码率
+piko_newx_inline_download_quality_1080p,1080p or lower,1080p 或更低
+piko_newx_inline_download_quality_720p,720p or lower,720p 或更低
+piko_newx_inline_download_quality_480p,480p or lower,480p 或更低
+piko_newx_inline_download_quality_360p,360p or lower,360p 或更低
+piko_newx_inline_download_quality_lowest,Lowest bitrate,最低码率
+piko_newx_inline_download_conflict_title,When media already exists,媒体已存在时
+piko_newx_inline_download_conflict_summary,How re-downloading a post that already has saved media is handled,重新下载已保存过媒体的帖子时如何处理
+piko_newx_inline_download_conflict_overwrite,Overwrite the existing file,覆盖现有文件
+piko_newx_inline_download_conflict_rename,Save with a new name,使用新文件名保存
+piko_newx_inline_download_conflict_skip,Skip already-downloaded media,跳过已下载的媒体
+piko_newx_inline_download_options_title,Download options,下载选项
+piko_newx_inline_download_options_summary,Choose where downloads are saved and how files are named,选择下载保存位置和文件命名方式
+piko_newx_inline_download_filename_template_title,Filename template,文件名模板
+piko_newx_inline_download_filename_template_summary,"Builds the saved filename from post values. Tap to edit, with a live preview of the result.",根据帖子信息生成保存文件名。点击编辑，并实时预览结果。
+piko_newx_inline_download_images_tree_uri_title,Images download folder,图片下载文件夹
+piko_newx_inline_download_images_tree_uri_summary,Folder chosen for downloaded images,下载图片所使用的文件夹
+piko_newx_inline_download_videos_tree_uri_title,Videos download folder,视频下载文件夹
+piko_newx_inline_download_videos_tree_uri_summary,Folder chosen for downloaded videos,下载视频所使用的文件夹
+piko_newx_inline_download_images_display_path_title,Images download folder path,图片下载文件夹路径
+piko_newx_inline_download_images_display_path_summary,Human-readable path of the images download folder,图片下载文件夹的可读路径
+piko_newx_inline_download_videos_display_path_title,Videos download folder path,视频下载文件夹路径
+piko_newx_inline_download_videos_display_path_summary,Human-readable path of the videos download folder,视频下载文件夹的可读路径
+piko_newx_download_options_folders,Folders,文件夹
+piko_newx_download_options_folder_images,Images,图片
+piko_newx_download_options_folder_videos,Videos,视频
+piko_newx_download_options_folder_not_set,Not set — tap to choose,未设置 — 点击选择
+piko_newx_download_options_folder_denied,Tap to give access again,点击重新授权访问
+piko_newx_download_options_folder_hint,Files are written straight into the folder you pick. Pick a folder under Pictures or DCIM to have downloads appear in your gallery.,文件会直接写入你选择的文件夹。选择 Pictures 或 DCIM 下的文件夹，可让下载内容出现在系统相册中。
+piko_newx_download_options_filename_hint,Tap a token to insert it. Anything outside braces is kept as-is.,点击变量即可插入。花括号之外的内容会原样保留。
+piko_newx_download_options_filename_preview,Preview: %1$s,预览：%1$s
+piko_newx_download_options_filename_reset,Reset to default,恢复默认
+piko_newx_download_options_changed,Download folder updated,下载文件夹已更新
+piko_newx_download_options_cancelled,No folder selected,未选择文件夹
+piko_newx_download_filename_title,Filename template,文件名模板
+piko_newx_download_filename_tokens,Tokens,变量
+piko_newx_download_filename_error_empty,Enter a filename template,请输入文件名模板
+piko_newx_download_filename_error_unclosed,A brace was opened but never closed,有一个左花括号未闭合
+piko_newx_download_filename_error_static,Add {id} or {timestamp} so different posts do not overwrite each other,请加入 {id} 或 {timestamp}，避免不同帖子相互覆盖
+piko_newx_download_filename_error_unknown,Unknown token {%1$s},未知变量 {%1$s}
+piko_newx_download_first_run_title,Choose a download folder,选择下载文件夹
+piko_newx_download_first_run_images,Downloaded images need a folder. Pick one so they are saved where you can find them.,下载图片需要指定文件夹。请选择一个方便查找的位置。
+piko_newx_download_first_run_videos,Downloaded videos need a folder. Pick one so they are saved where you can find them.,下载视频需要指定文件夹。请选择一个方便查找的位置。
+piko_newx_download_first_run_both,Images and videos each need a folder before they can be downloaded.,下载前需要分别为图片和视频选择文件夹。
+piko_newx_download_first_run_images_action,Choose images folder,选择图片文件夹
+piko_newx_download_first_run_videos_action,Choose videos folder,选择视频文件夹
+piko_newx_download_first_run_retry,Tap download again once the folder is set.,设置文件夹后，再点击一次下载。
+piko_newx_inline_actions_title,Inline actions to hide,要隐藏的内嵌操作
+piko_newx_inline_actions_summary,Choose which actions are hidden below NewX posts,选择要在 NewX 帖子下方隐藏的操作
+piko_newx_inline_action_reply,Reply,回复
+piko_newx_inline_action_repost,Repost,转帖
+piko_newx_inline_action_like,Like,点赞
+piko_newx_inline_action_dislike,Dislike,点踩
+piko_newx_inline_action_view_count,View count,浏览次数
+piko_newx_inline_action_bookmark,Bookmark,书签
+piko_newx_inline_action_share,Share,分享
+piko_newx_nav_bar_home,Home,主页
+piko_newx_nav_bar_explore,Explore,探索
+piko_newx_nav_bar_grok,Grok,Grok
+piko_newx_nav_bar_notifications,Notifications,通知
+piko_newx_nav_bar_dm,Messages,消息
+piko_newx_nav_editor_title,Navigation bar,导航栏
+piko_newx_nav_editor_summary,Choose up to five destinations for the NewX bottom navigation bar,为 NewX 底部导航栏选择最多五个入口
+piko_newx_nav_editor_hint,Drag destinations between sections. Hold near the top or bottom to scroll. Changes apply after an app restart.,在分区之间拖动入口。拖到顶部或底部附近可滚动。更改会在应用重启后生效。
+piko_newx_nav_editor_shown,Shown in navigation bar (up to 5),已显示在导航栏中（最多 5 个）
+piko_newx_nav_editor_available,Available destinations,可用入口
+piko_newx_nav_editor_drag,Drag to move,拖动以移动
+piko_newx_nav_editor_restart,Restart app to apply changes,重启应用以应用更改
+piko_newx_nav_editor_restart_title,Restart app?,重启应用？
+piko_newx_nav_editor_restart_message,The navigation bar changes take effect after the app restarts.,导航栏更改将在应用重启后生效。
+piko_newx_nav_editor_restart_confirm,Restart,重启
+piko_newx_drawer_title,Drawer items to hide,要隐藏的侧边栏项目
+piko_newx_drawer_summary,Choose which items are hidden from the NewX navigation drawer,选择要从 NewX 导航侧边栏隐藏的项目
+piko_newx_show_piko_settings_in_drawer_title,Show Piko Settings in the drawer footer,在侧边栏底部显示 Piko 设置
+piko_newx_show_piko_settings_in_drawer_summary,Adds a shortcut to Piko Settings to the NewX drawer footer,在 NewX 侧边栏底部添加 Piko 设置快捷入口
+piko_newx_show_messages_in_drawer_title,Show Messages in the drawer,在侧边栏显示“消息”
+piko_newx_show_messages_in_drawer_summary,Adds a Messages shortcut below Profile in the NewX drawer,在 NewX 侧边栏的个人资料下方添加“消息”快捷入口
+piko_newx_show_grok_in_drawer_title,Show Grok in the drawer,在侧边栏显示 Grok
+piko_newx_show_grok_in_drawer_summary,Adds a Grok shortcut below Profile in the NewX drawer,在 NewX 侧边栏的个人资料下方添加 Grok 快捷入口
+piko_newx_show_notifications_in_drawer_title,Show Notifications in the drawer,在侧边栏显示“通知”
+piko_newx_show_notifications_in_drawer_summary,Adds a Notifications shortcut below Profile in the NewX drawer,在 NewX 侧边栏的个人资料下方添加“通知”快捷入口
+piko_newx_drawer_editor_title,Drawer,侧边栏
+piko_newx_drawer_editor_summary,Choose which items appear in the NewX navigation drawer,选择 NewX 导航侧边栏中显示的项目
+piko_newx_drawer_editor_hint,Toggles apply the next time the drawer opens. Restart the app to apply changes immediately.,开关会在下次打开侧边栏时生效。重启应用可立即应用更改。
+piko_newx_drawer_editor_shortcuts,Shortcuts,快捷入口
+piko_newx_drawer_editor_items,Drawer items,侧边栏项目
+piko_newx_drawer_editor_restart,Restart app to apply changes,重启应用以应用更改
+piko_newx_drawer_editor_restart_title,Restart app?,重启应用？
+piko_newx_drawer_editor_restart_message,The drawer changes take effect after the app restarts.,侧边栏更改将在应用重启后生效。
+piko_newx_drawer_editor_restart_confirm,Restart,重启
+piko_newx_drawer_grok,Grok,Grok
+piko_newx_drawer_theme_toggle,Theme toggle,主题切换
+piko_newx_post_options_title,Post menu items to hide,要隐藏的帖子菜单项
+piko_newx_post_options_summary,Choose which items are hidden from the NewX post menu,选择要从 NewX 帖子菜单隐藏的项目
+piko_newx_post_option_copy_link,Copy link,复制链接
+piko_newx_post_option_share_via_dm,Share via direct message,通过私信分享
+piko_newx_post_option_share,Share post,分享帖子
+piko_newx_post_option_bookmark,Bookmark,添加书签
+piko_newx_post_option_follow,Follow,关注
+piko_newx_post_option_mute,Mute,静音
+piko_newx_post_option_block,Block,屏蔽
+piko_newx_post_option_report,Report,举报
+piko_newx_post_option_not_interested,Not interested,不感兴趣
+piko_newx_post_option_mute_conversation,Mute conversation,将对话静音
+piko_newx_post_option_pin,Pin,置顶
+piko_newx_post_option_delete,Delete,删除
+piko_newx_post_option_edit,Edit,编辑
+piko_newx_post_option_quote,Quote,引用
+piko_newx_post_option_repost,Repost,转帖
+piko_newx_post_option_like,Like,点赞
+piko_newx_post_option_dislike,Dislike,点踩
+piko_newx_post_option_view_interactions,View post interactions,查看帖子互动
+piko_newx_post_option_view_hidden_replies,View hidden replies,查看隐藏回复
+piko_newx_post_option_view_analytics,View analytics,查看分析数据
+piko_newx_post_option_change_reply_permission,Change who can reply,更改谁可以回复
+piko_newx_post_option_add_to_list,Add to list,添加到列表
+piko_newx_post_option_community_note,Community note,社区注释
+piko_newx_post_option_boost,Boost,推广
+piko_newx_post_option_highlight,Highlight,精选
+piko_newx_post_filtering_title,Post filtering,帖子过滤
+piko_newx_post_filtering_summary,Hide posts containing user-defined words and phrases,隐藏包含自定义词语或短语的帖子
+piko_newx_post_filtering_enabled_title,Enable post filtering,启用帖子过滤
+piko_newx_post_filtering_empty,"No filter rules yet.
+
+Rules match literal words or phrases without case sensitivity. Content rules check posts, quotes, notes, articles, and link cards. Username rules check post and quoted authors. Matches are hidden from newly loaded timelines, including reply and profile timelines.","尚无过滤规则。
+
+规则按字面匹配词语或短语，不区分大小写。内容规则会检查帖子、引用、注释、文章和链接卡片；用户名规则会检查帖子作者和被引用作者。匹配内容会从新加载的时间线中隐藏，包括回复时间线和个人资料时间线。"
+piko_newx_post_filtering_add,Add filter rule,添加过滤规则
+piko_newx_post_filtering_add_title,Add filter rule,添加过滤规则
+piko_newx_post_filtering_edit_title,Edit filter rule,编辑过滤规则
+piko_newx_post_filtering_phrase_hint,Word or phrase,词语或短语
+piko_newx_post_filtering_match_content,Match post content,匹配帖子内容
+piko_newx_post_filtering_match_usernames,Match usernames,匹配用户名
+piko_newx_post_filtering_scope_content,Post content,帖子内容
+piko_newx_post_filtering_scope_usernames,Usernames,用户名
+piko_newx_post_filtering_scope_both,Post content and usernames,帖子内容和用户名
+piko_newx_post_filtering_rule_enabled,Filter rule enabled,启用此过滤规则
+piko_newx_post_filtering_save,Save,保存
+piko_newx_post_filtering_cancel,Cancel,取消
+piko_newx_post_filtering_remove,Remove,移除
+piko_newx_post_filtering_error_blank,Enter a word or phrase.,请输入词语或短语。
+piko_newx_post_filtering_error_scope,Select at least one matching scope.,请至少选择一种匹配范围。
+piko_newx_post_filtering_error_duplicate,This word or phrase already has a rule.,此词语或短语已存在规则。
+piko_newx_verified_account_timeline_filter_title,Enable timeline filtering,启用时间线过滤
+piko_newx_verified_account_timeline_filter_summary,Hides selected verified account types from regular timelines,从普通时间线隐藏所选认证账号类型
+piko_newx_verified_account_thread_filter_title,Enable thread filtering,启用对话串过滤
+piko_newx_verified_account_thread_filter_summary,Hides selected verified account types from conversation threads,从对话串中隐藏所选认证账号类型
+piko_newx_verified_account_filtered_replies_menu_title,Show Filtered replies menu,显示“已过滤回复”菜单
+piko_newx_verified_account_filtered_replies_menu_summary,Adds a Filtered replies option to the post menu when thread filtering is on,开启对话串过滤时，在帖子菜单中添加“已过滤回复”选项
+piko_newx_hide_verified_account_types_title,Hide posts by verified account type,按认证账号类型隐藏帖子
+piko_newx_hide_verified_account_types_summary,Hide posts and replies whose timeline data reports a selected verification type,隐藏时间线数据报告为所选认证类型的帖子和回复
+piko_newx_hide_verified_account_types_business,Business,企业
+piko_newx_hide_verified_account_types_government,Government,政府
+piko_newx_hide_verified_account_types_user,User / blue verification,用户 / 蓝标认证
+piko_newx_hide_verified_account_types_unknown,Unknown,未知
+piko_newx_verified_account_whitelist_title,Verified account whitelist,认证账号白名单
+piko_newx_verified_account_whitelist_summary,Keep selected accounts visible when their timeline-reported verification type is hidden. Enter an @handle or numeric account ID.,当某类认证账号被隐藏时，仍保留指定账号可见。请输入 @用户名 或数字账号 ID。
+piko_newx_verified_account_whitelist_empty,"No whitelisted accounts yet.
+
+Add an @handle or numeric account ID. Long-press an account to remove it.","白名单中暂无账号。
+
+请添加 @用户名 或数字账号 ID。长按账号可将其移除。"
+piko_newx_verified_account_whitelist_add,Add account,添加账号
+piko_newx_verified_account_whitelist_add_title,Add verified account,添加认证账号
+piko_newx_verified_account_whitelist_account_hint,@handle or numeric account ID,@用户名 或数字账号 ID
+piko_newx_verified_account_whitelist_save,Save,保存
+piko_newx_verified_account_whitelist_cancel,Cancel,取消
+piko_newx_verified_account_whitelist_error_blank,Enter an account handle or numeric account ID.,请输入账号用户名或数字账号 ID。
+piko_newx_verified_account_whitelist_error_duplicate,That account is already whitelisted.,该账号已在白名单中。
+piko_newx_filtered_replies_option_label,Filtered replies,已过滤回复
+piko_newx_filtered_replies_dialog_title,Filtered replies,已过滤回复
+piko_newx_filtered_replies_empty,No filtered replies for this post.,此帖子没有被过滤的回复。
+piko_newx_filtered_replies_whitelist_add,+ Whitelist,+ 加入白名单
+piko_newx_filtered_replies_whitelisted,Whitelisted ✓,已加入白名单 ✓
+piko_newx_filtered_replies_whitelist_added,Added @%s to whitelist,已将 @%s 加入白名单
+piko_newx_filtered_replies_copied,Copied reply text,已复制回复文本
+piko_newx_feature_switches_title,Feature switches,功能开关
+piko_newx_feature_switches_summary,"Manage, import, or export feature switch overrides",管理、导入或导出功能开关覆盖值
+piko_newx_feature_switch_manage_title,Manage feature switches,管理功能开关
+piko_newx_feature_switch_manage_summary,"Search observed switches and override boolean, numeric, string, or list values",搜索已观察到的开关，并覆盖布尔、数值、字符串或列表值
+piko_newx_feature_switch_import_title,Import feature switches,导入功能开关
+piko_newx_feature_switch_import_summary,Replace current feature switch overrides from a JSON file,从 JSON 文件替换当前功能开关覆盖值
+piko_newx_feature_switch_export_title,Export feature switches,导出功能开关
+piko_newx_feature_switch_export_summary,Save current feature switch overrides to a JSON file,将当前功能开关覆盖值保存为 JSON 文件
+piko_newx_feature_switch_import_success,Feature switches imported,功能开关已导入
+piko_newx_feature_switch_import_failed,Could not import feature switches,无法导入功能开关
+piko_newx_feature_switch_export_success,Feature switches exported,功能开关已导出
+piko_newx_feature_switch_export_failed,Could not export feature switches,无法导出功能开关
+piko_newx_feature_switch_file_not_selected,No feature switch file was selected,未选择功能开关文件
+piko_newx_feature_switch_search_hint,Search feature switches,搜索功能开关
+piko_newx_feature_switch_add,Add feature switch,添加功能开关
+piko_newx_feature_switch_add_title,Add feature switch,添加功能开关
+piko_newx_feature_switch_key_hint,Feature switch key,功能开关键名
+piko_newx_feature_switch_value_type,Value type,值类型
+piko_newx_feature_switch_next,Next,下一步
+piko_newx_feature_switch_invalid_key,Enter a feature switch key.,请输入功能开关键名。
+piko_newx_feature_switch_duplicate_key,This feature switch is already listed.,该功能开关已在列表中。
+piko_newx_feature_switch_empty,"No feature switches have been observed yet. Use X, then return to this screen.",尚未观察到功能开关。请先使用 X，然后返回此页面。
+piko_newx_feature_switch_no_results,No matching feature switches,没有匹配的功能开关
+piko_newx_feature_switch_overridden_section,Overridden,已覆盖
+piko_newx_feature_switch_not_overridden_section,Default,默认
+piko_newx_feature_switch_edit_title,Edit feature switch,编辑功能开关
+piko_newx_feature_switch_boolean_value,Boolean value,布尔值
+piko_newx_feature_switch_number_value,Number value,数值
+piko_newx_feature_switch_string_value,String value,字符串值
+piko_newx_feature_switch_list_value,"List values, one per line",列表值，每行一个
+piko_newx_feature_switch_save,Save,保存
+piko_newx_feature_switch_cancel,Cancel,取消
+piko_newx_feature_switch_remove,Remove override,移除覆盖值
+piko_newx_feature_switch_invalid_value,Enter a valid value for this switch type.,请输入此开关类型的有效值。
+piko_newx_feature_switch_null,null,null
+piko_newx_feature_switch_type_boolean,Boolean,布尔值
+piko_newx_feature_switch_type_int,Integer,整数
+piko_newx_feature_switch_type_long,Long,长整数
+piko_newx_feature_switch_type_float,Float,单精度浮点数
+piko_newx_feature_switch_type_double,Double,双精度浮点数
+piko_newx_feature_switch_type_string,String,字符串
+piko_newx_feature_switch_type_list,List,列表
+piko_newx_backup_title,Back up settings,备份设置
+piko_newx_backup_summary,Save your Piko NewX settings to a JSON file,将 Piko NewX 设置保存为 JSON 文件
+piko_newx_restore_title,Restore settings,恢复设置
+piko_newx_restore_summary,Restore your Piko NewX settings from a JSON file,从 JSON 文件恢复 Piko NewX 设置
+piko_newx_backup_success,NewX settings backed up,NewX 设置已备份
+piko_newx_backup_failed,Could not back up NewX settings,无法备份 NewX 设置
+piko_newx_restore_failed,Could not restore NewX settings,无法恢复 NewX 设置
+piko_newx_backup_restore_no_file,No settings file was selected,未选择设置文件
+piko_newx_font_title,Font style,字体样式
+piko_newx_font_summary,Customise the app and emoji font style,自定义应用字体和 Emoji 字体样式
+piko_newx_custom_font_title,Custom font,自定义字体
+piko_newx_custom_font_summary,Apply a custom TTF or OTF font to the app,为应用应用自定义 TTF 或 OTF 字体
+piko_newx_add_font_title,Add font,添加字体
+piko_newx_add_font_summary,Make sure the font is of type .ttf or .otf,请确保字体文件类型为 .ttf 或 .otf
+piko_newx_delete_font_title,Delete font,删除字体
+piko_newx_system_font_title,Use system font,使用系统字体
+piko_newx_system_font_summary,Use the default system font,使用系统默认字体
+piko_newx_custom_emoji_font_title,Custom emoji font,自定义 Emoji 字体
+piko_newx_custom_emoji_font_summary,Apply a custom font to emojis,为 Emoji 应用自定义字体
+piko_newx_add_emoji_font_title,Add emoji font,添加 Emoji 字体
+piko_newx_add_emoji_font_summary,Make sure the font is of type .ttf or .otf,请确保字体文件类型为 .ttf 或 .otf
+piko_newx_delete_emoji_font_title,Delete emoji font,删除 Emoji 字体
+piko_newx_font_added,Font added successfully,字体添加成功
+piko_newx_font_add_failed,Font addition failed,添加字体失败
+piko_newx_font_invalid,Make sure the font is of type .ttf or .otf,请确保字体文件类型为 .ttf 或 .otf
+piko_newx_font_deleted,Font deleted successfully,字体删除成功
+piko_newx_font_delete_failed,Font deletion failed,删除字体失败
+piko_newx_font_not_found,No custom font found to be deleted,没有可删除的自定义字体
+piko_newx_custom_sharing_domain_title,Custom sharing domain,自定义分享域名
+piko_newx_custom_sharing_domain_summary,Replace x.com with a custom domain (like fxtwitter.com) when sharing posts,分享帖子时，将 x.com 替换为自定义域名（例如 fxtwitter.com）
+piko_newx_custom_sharing_domain_invalid,Malformed custom sharing domain,自定义分享域名格式错误
+piko_newx_canonical_urls_title,Use canonical URLs,使用规范 URL
+piko_newx_canonical_urls_summary,Shows expanded URL names in posts and profiles and opens them instead of shortened t.co URLs,在帖子和个人资料中显示展开后的 URL，并直接打开它们，而不是缩短的 t.co 链接
+piko_newx_restart_title,Restart X?,重启 X？
+piko_newx_restart_summary,Restart the app now to apply this change.,立即重启应用以应用此更改。
+piko_newx_restart_now,Restart now,立即重启
+piko_newx_action_failed,The NewX settings action failed,NewX 设置操作失败
+piko_newx_setting_validation_failed,Could not validate this setting,无法验证此设置
+piko_newx_settings_search_hint,Search settings,搜索设置
+piko_newx_settings_search_clear,Clear search,清除搜索
+piko_newx_settings_search_no_results,"No results for ""%s""",没有找到“%s”的结果

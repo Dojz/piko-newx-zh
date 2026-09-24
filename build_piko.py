@@ -9,6 +9,7 @@ from pathlib import Path
 PIKO_REPO = "crimera/piko"
 PIKO_REPOSITORY = f"https://github.com/{PIKO_REPO}.git"
 PIKO_BRANCH = "x-lite"
+ZH_CN_STRINGS = Path(__file__).resolve().parent / "translations" / "newx-zh-rCN.xml"
 XLITE_CONSTANTS = (
     "patches/src/main/kotlin/app/crimera/patches/newx/utils/Constants.kt"
 )
@@ -28,6 +29,36 @@ def get_supported_versions(constants: str) -> frozenset[str]:
     if not versions:
         raise ValueError("Could not find X-Lite compatible app versions in Piko")
     return versions
+
+
+
+def apply_zh_cn(piko_directory: Path) -> None:
+    """Overlay the maintained Simplified Chinese NewX resources."""
+    if not ZH_CN_STRINGS.is_file():
+        raise FileNotFoundError(f"Missing zh-CN translation overlay: {ZH_CN_STRINGS}")
+    target = (
+        piko_directory
+        / "patches/src/main/resources/addresources/values-zh-rCN/newx/strings.xml"
+    )
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(ZH_CN_STRINGS, target)
+
+
+def checkout_requested_piko_commit(piko_directory: Path) -> None:
+    """Pin the build to the exact Piko commit from the official piko-newx release."""
+    requested = os.environ.get("PIKO_COMMIT", "").strip()
+    if not requested:
+        return
+    subprocess.run(
+        ["git", "fetch", "--depth", "1", "origin", requested],
+        cwd=piko_directory,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "checkout", "--detach", requested],
+        cwd=piko_directory,
+        check=True,
+    )
 
 
 def pre_build_cleanup(piko_directory: Path) -> None:
@@ -108,12 +139,14 @@ def build_piko_patches(
             ],
             check=True,
         )
+        checkout_requested_piko_commit(piko_directory)
 
         supported_versions = get_supported_versions(
             (piko_directory / XLITE_CONSTANTS).read_text()
         )
 
         pre_build_cleanup(piko_directory)
+        apply_zh_cn(piko_directory)
 
         if patch_version is not None:
             set_project_version(piko_directory, patch_version)

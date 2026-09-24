@@ -1,10 +1,20 @@
-name: Release - Piko Lite
+name: Auto release - Piko NewX zh-CN
+# first-build trigger after enabling Actions
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "translations/**"
+      - "build_piko.py"
+      - "main.py"
+      - ".github/workflows/build.yaml"
+  schedule:
+    - cron: "17 */6 * * *"
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}
+  group: piko-newx-zh-release
   cancel-in-progress: false
 
 permissions:
@@ -13,81 +23,92 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up java
+      - name: Read official piko-newx release metadata
+        id: upstream
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://raw.githubusercontent.com/crimera/piko-newx/main/patches-bundle.json -o /tmp/upstream.json
+          VERSION=$(jq -r '.version' /tmp/upstream.json)
+          APP_VERSION=$(jq -r '.app_version' /tmp/upstream.json)
+          PIKO_COMMIT=$(jq -r '.piko_commit' /tmp/upstream.json)
+          test -n "$VERSION" && test "$VERSION" != "null"
+          test -n "$APP_VERSION" && test "$APP_VERSION" != "null"
+          test -n "$PIKO_COMMIT" && test "$PIKO_COMMIT" != "null"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
+          echo "piko_commit=$PIKO_COMMIT" >> "$GITHUB_OUTPUT"
+
+      - name: Decide whether a localized release is needed
+        id: decision
+        shell: bash
+        run: |
+          set -euo pipefail
+          BUILD=true
+          if [ -f patches-bundle.json ]; then
+            LOCAL_VERSION=$(jq -r '.version // ""' patches-bundle.json)
+            LOCAL_COMMIT=$(jq -r '.piko_commit // ""' patches-bundle.json)
+            LOCAL_URL=$(jq -r '.download_url // ""' patches-bundle.json)
+            if [ "$LOCAL_VERSION" = "${{ steps.upstream.outputs.version }}" ] \
+              && [ "$LOCAL_COMMIT" = "${{ steps.upstream.outputs.piko_commit }}" ] \
+              && [[ "$LOCAL_URL" == *"github.com/${GITHUB_REPOSITORY}/releases/"* ]]; then
+              BUILD=false
+            fi
+          fi
+          echo "build=$BUILD" >> "$GITHUB_OUTPUT"
+          echo "Build localized release: $BUILD"
+
+      - name: Set up Java
+        if: steps.decision.outputs.build == 'true'
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu' # See 'Supported distributions' for available options
-          java-version: '21'
+          distribution: zulu
+          java-version: "21"
 
       - name: Set up Gradle
+        if: steps.decision.outputs.build == 'true'
         uses: gradle/actions/setup-gradle@v4
 
       - name: Install uv
+        if: steps.decision.outputs.build == 'true'
         uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.13"
           enable-cache: true
 
       - name: Install dependencies
+        if: steps.decision.outputs.build == 'true'
         run: uv sync --frozen
 
-      - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v7
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
-          fingerprint: ${{ vars.GPG_FINGERPRINT }}
-
-      - name: Generate release version
-        id: release_version
-        env:
-          FORCE_PATCH: "true"
-        run: |
-          set -euo pipefail
-          chmod +x .github/scripts/generate-changelog.sh
-          .github/scripts/generate-changelog.sh \
-            2>/tmp/release-version-output \
-            >/tmp/release-changelog-output
-
-          cat /tmp/release-version-output
-          NEW_VERSION=$(grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' /tmp/release-version-output | tail -n1)
-          SEMANTIC_BUMP=$(grep '^semantic_bump=' /tmp/release-version-output | tail -n1 | cut -d= -f2)
-
-          test -n "$NEW_VERSION"
-          test -n "$SEMANTIC_BUMP"
-          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
-          echo "semantic_bump=$SEMANTIC_BUMP" >> "$GITHUB_OUTPUT"
-
-      - name: Build and publish release
+      - name: Build and publish localized bundle
+        if: steps.decision.outputs.build == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GRADLE_OPTS: -Dorg.gradle.caching=true
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          PIKO_COMMIT: ${{ steps.upstream.outputs.piko_commit }}
         run: |
           mkdir -p bins
           uv run main.py \
-            --release-tag "${{ steps.release_version.outputs.new_version }}" \
-            --semantic-bump "${{ steps.release_version.outputs.semantic_bump }}" \
-            --changelog-file /tmp/release-changelog-output
+            --m 1 \
+            --v "${{ steps.upstream.outputs.app_version }}" \
+            --release-tag "${{ steps.upstream.outputs.version }}" \
+            --semantic-bump true
 
-      - name: Commit release metadata
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit localized release metadata
+        if: steps.decision.outputs.build == 'true'
+        shell: bash
         run: |
           set -euo pipefail
-          TAG="${{ steps.release_version.outputs.new_version }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add patches-bundle.json CHANGELOG.md
           if git diff --cached --quiet; then
-            echo "no release metadata changes"
             exit 0
           fi
-          git commit -m "chore: update release metadata for ${TAG} [skip ci]"
+          git commit -m "chore: publish zh-CN ${{ steps.upstream.outputs.version }} [skip ci]"
           git push
