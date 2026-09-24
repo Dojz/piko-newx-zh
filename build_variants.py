@@ -2,7 +2,7 @@ import re
 import subprocess
 
 
-XLITE_PATCH_NAME = re.compile(r"^Name:\s*(NewX:\s*.+?)\s*$", re.MULTILINE)
+XLITE_PATCH_NAME = re.compile(r"^Name:\s*((?:NewX|Instagram):\s*.+?)\s*$", re.MULTILINE)
 
 
 def get_xlite_patches(cli: str, patches: str) -> list[str]:
@@ -24,7 +24,7 @@ def get_xlite_patches(cli: str, patches: str) -> list[str]:
     output = result.stdout + result.stderr
     includes = list(dict.fromkeys(XLITE_PATCH_NAME.findall(output)))
     if not includes:
-        raise RuntimeError("Morphe returned no NewX patches")
+        raise RuntimeError("Morphe returned no NewX or Instagram patches")
     return includes
 
 

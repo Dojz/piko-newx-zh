@@ -9,7 +9,13 @@ from pathlib import Path
 PIKO_REPO = "crimera/piko"
 PIKO_REPOSITORY = f"https://github.com/{PIKO_REPO}.git"
 PIKO_BRANCH = "x-lite"
-ZH_CN_STRINGS = Path(__file__).resolve().parent / "translations" / "newx-zh-rCN.xml"
+REPO_ROOT = Path(__file__).resolve().parent
+ZH_CN_NEWX_STRINGS = REPO_ROOT / "translations" / "newx-zh-rCN.xml"
+ZH_CN_INSTAGRAM_STRINGS = REPO_ROOT / "translations" / "instagram-zh-rCN.xml"
+PIKO_OVERLAY_DIR = REPO_ROOT / "piko-overrides"
+INSTAGRAM_ACTIONBAR = (
+    "extensions/instagram/src/main/java/app/morphe/extension/instagram/patches/actionbar/ActionBarPatch.java"
+)
 XLITE_CONSTANTS = (
     "patches/src/main/kotlin/app/crimera/patches/newx/utils/Constants.kt"
 )
@@ -33,15 +39,81 @@ def get_supported_versions(constants: str) -> frozenset[str]:
 
 
 def apply_zh_cn(piko_directory: Path) -> None:
-    """Overlay the maintained Simplified Chinese NewX resources."""
-    if not ZH_CN_STRINGS.is_file():
-        raise FileNotFoundError(f"Missing zh-CN translation overlay: {ZH_CN_STRINGS}")
-    target = (
-        piko_directory
-        / "patches/src/main/resources/addresources/values-zh-rCN/newx/strings.xml"
-    )
-    target.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(ZH_CN_STRINGS, target)
+    """Overlay the maintained Simplified Chinese NewX and Instagram resources."""
+    overlays = {
+        ZH_CN_NEWX_STRINGS:
+            "patches/src/main/resources/addresources/values-zh-rCN/newx/strings.xml",
+        ZH_CN_INSTAGRAM_STRINGS:
+            "patches/src/main/resources/addresources/values-zh-rCN/instagram/strings.xml",
+    }
+    for source, relative_target in overlays.items():
+        if not source.is_file():
+            raise FileNotFoundError(f"Missing zh-CN translation overlay: {source}")
+        target = piko_directory / relative_target
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+
+
+def apply_source_overlays(piko_directory: Path) -> None:
+    """Copy fork-owned source additions into the temporary Piko checkout."""
+    if not PIKO_OVERLAY_DIR.exists():
+        return
+    for source in PIKO_OVERLAY_DIR.rglob("*"):
+        if not source.is_file():
+            continue
+        relative = source.relative_to(PIKO_OVERLAY_DIR)
+        target = piko_directory / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+
+
+def install_instagram_screen_translate_button(piko_directory: Path) -> None:
+    """Add one native-styled full-screen translate icon to Instagram action bars."""
+    path = piko_directory / INSTAGRAM_ACTIONBAR
+    text = path.read_text(encoding="utf-8")
+
+    import_anchor = "import app.morphe.extension.instagram.constants.Constants;\n"
+    import_line = "import app.morphe.extension.instagram.patches.translate.ScreenTranslator;\n"
+    if import_line not in text:
+        if import_anchor not in text:
+            raise ValueError("Instagram ActionBarPatch import anchor changed upstream")
+        text = text.replace(import_anchor, import_anchor + import_line, 1)
+
+    helper = """
+    private static void addScreenTranslateButton(ViewGroup viewGroup) {
+        if (viewGroup == null) {
+            return;
+        }
+        ImageView imageView = UI.addImageViewToViewGroup(
+            viewGroup,
+            "instagram_translate_pano_outline_24",
+            ScreenTranslator::translateVisibleScreen
+        );
+        if (imageView != null) {
+            imageView.setContentDescription("全屏翻译");
+        }
+    }
+
+"""
+    class_anchor = "public class ActionBarPatch {\n"
+    if "private static void addScreenTranslateButton" not in text:
+        if class_anchor not in text:
+            raise ValueError("Instagram ActionBarPatch class anchor changed upstream")
+        text = text.replace(class_anchor, class_anchor + helper, 1)
+
+    for method in (
+        "mainFeedActionBarButton",
+        "userProfileActionBarButton",
+        "chatActionBarButton",
+        "inboxActionBarButton",
+    ):
+        pattern = rf"(public static void {method}\([^)]*\)\s*\{{\s*try\s*\{{)"
+        replacement = r"\1\n            addScreenTranslateButton(viewGroup);"
+        text, count = re.subn(pattern, replacement, text, count=1, flags=re.DOTALL)
+        if count != 1:
+            raise ValueError(f"Instagram ActionBarPatch method changed upstream: {method}")
+
+    path.write_text(text, encoding="utf-8")
 
 
 def checkout_requested_piko_commit(piko_directory: Path) -> None:
@@ -62,19 +134,17 @@ def checkout_requested_piko_commit(piko_directory: Path) -> None:
 
 
 def pre_build_cleanup(piko_directory: Path) -> None:
-    """Remove Instagram, Twitter, and legacy patches/extensions before building."""
-    # Remove non-NewX patch source packages
+    """Remove legacy Twitter patches/extensions while keeping NewX and Instagram."""
+    # Remove the legacy Twitter patch source package; keep Instagram and NewX.
     for path in [
-        piko_directory / "patches/src/main/kotlin/app/crimera/patches/instagram",
         piko_directory / "patches/src/main/kotlin/app/crimera/patches/twitter",
         piko_directory / "patches/src/main/kotlin/app/revanced",
     ]:
         if path.exists():
             shutil.rmtree(path)
 
-    # Remove non-NewX extension modules
+    # Remove the legacy Twitter extension module; keep Instagram.
     for path in [
-        piko_directory / "extensions/instagram",
         piko_directory / "extensions/twitter",
     ]:
         if path.exists():
@@ -92,10 +162,25 @@ def pre_build_cleanup(piko_directory: Path) -> None:
 
     addresources_dir = piko_directory / "patches/src/main/resources/addresources"
     if addresources_dir.exists():
-        for res_name in ("instagram", "twitter"):
+        for res_name in ("twitter",):
             for matched in addresources_dir.glob(f"*/{res_name}"):
                 if matched.is_dir():
                     shutil.rmtree(matched)
+
+    # The current x-lite Instagram userdata fingerprint has one unused import
+    # from the legacy Twitter patch tree. Remove it when building Instagram
+    # without the legacy Twitter sources.
+    userdata_fingerprint = (
+        piko_directory
+        / "patches/src/main/kotlin/app/crimera/patches/instagram/entity/userdata/Fingerprint.kt"
+    )
+    if userdata_fingerprint.exists():
+        contents = userdata_fingerprint.read_text(encoding="utf-8")
+        contents = contents.replace(
+            "import app.crimera.patches.twitter.logging.responseLogging.JACKSON_CLASS\n",
+            "",
+        )
+        userdata_fingerprint.write_text(contents, encoding="utf-8")
 
 
 def set_project_version(piko_directory: Path, version: str) -> None:
@@ -146,6 +231,8 @@ def build_piko_patches(
         )
 
         pre_build_cleanup(piko_directory)
+        apply_source_overlays(piko_directory)
+        install_instagram_screen_translate_button(piko_directory)
         apply_zh_cn(piko_directory)
 
         if patch_version is not None:

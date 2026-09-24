@@ -4,4 +4,4 @@
   </a>
 </p>
 
-构建并发布 [Piko ](https://github.com/crimera/piko/tree/x-lite)[`x-lite`](https://github.com/crimera/piko/tree/x-lite)[ 分支](https://github.com/crimera/piko/tree/x-lite)的 [NewX](https://github.com/crimera/piko/tree/x-lite) -zh补丁包
+构建并发布 [Piko ](https://github.com/crimera/piko/tree/x-lite)[`x-lite`](https://github.com/crimera/piko/tree/x-lite)[ 分支](https://github.com/crimera/piko/tree/x-lite)的 NewX、Instagram -zh补丁包

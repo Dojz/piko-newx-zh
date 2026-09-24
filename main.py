@@ -13,7 +13,6 @@ from utils import publish_release, sign_artifact
 
 
 CHANGELOG_FILE = "CHANGELOG.md"
-CHANGELOG_APP_NAME = "Twitter"
 PATCHES_BUNDLE_FILE = "patches-bundle.json"
 PATCHES_LIST_ASSET = "patches-list.json"
 PATCHES_MPP = "bins/patches.mpp"
@@ -140,7 +139,7 @@ def write_patches_bundle(
         "version": release_tag,
         "download_url": f"https://github.com/{repo}/releases/download/{release_tag}/patches.mpp",
         "created_at": now,
-        "description": f"Piko NewX 简体中文 patch bundle for Morphe ({release_tag}).",
+        "description": f"Piko NewX + Instagram 简体中文 patch bundle for Morphe ({release_tag}).",
         "app_version": app_version,
         "piko_commit": piko_build.commit,
     }
@@ -192,9 +191,7 @@ def update_changelog(
         sections.append(generated_changelog)
 
     if new_patches:
-        patch_bullets = "\n".join(
-            f"* **{CHANGELOG_APP_NAME}:** {patch}" for patch in new_patches
-        )
+        patch_bullets = "\n".join(f"* {patch}" for patch in new_patches)
         sections.append(f"### New Patches\n{patch_bullets}")
 
     body = "\n\n".join(sections) if sections else "* No new patches or commits."

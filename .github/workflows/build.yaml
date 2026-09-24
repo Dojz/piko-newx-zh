@@ -1,4 +1,4 @@
-name: Auto release - Piko NewX zh-CN
+name: Auto release - Piko NewX + Instagram zh-CN
 # first-build trigger after enabling Actions
 
 on:
@@ -7,7 +7,10 @@ on:
     paths:
       - "translations/**"
       - "build_piko.py"
+      - "build_variants.py"
       - "main.py"
+      - "utils.py"
+      - "piko-overrides/**"
       - ".github/workflows/build.yaml"
   schedule:
     - cron: "17 */6 * * *"
@@ -50,7 +53,7 @@ jobs:
         run: |
           set -euo pipefail
           BUILD=true
-          if [ -f patches-bundle.json ]; then
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ -f patches-bundle.json ]; then
             LOCAL_VERSION=$(jq -r '.version // ""' patches-bundle.json)
             LOCAL_COMMIT=$(jq -r '.piko_commit // ""' patches-bundle.json)
             LOCAL_URL=$(jq -r '.download_url // ""' patches-bundle.json)

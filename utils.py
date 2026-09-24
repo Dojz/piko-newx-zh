@@ -92,12 +92,31 @@ def publish_release(tag: str, files: list[str], message: str, title = ""):
     if key is None:
         raise Exception("GITHUB_TOKEN is not set")
 
-    command = ["gh", "release", "create", "--latest", tag, "--notes", message, "--title", title]
-
     if len(files) == 0:
         raise Exception("Files should have atleast one item")
 
-    for file in files:
-        command.append(file)
+    env = os.environ.copy()
+    existing = subprocess.run(
+        ["gh", "release", "view", tag],
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    if existing.returncode == 0:
+        subprocess.run(
+            ["gh", "release", "upload", tag, "--clobber", *files],
+            env=env,
+            check=True,
+        )
+        subprocess.run(
+            ["gh", "release", "edit", tag, "--latest", "--notes", message, "--title", title],
+            env=env,
+            check=True,
+        )
+        return
 
-    subprocess.run(command, env=os.environ.copy()).check_returncode()
+    subprocess.run(
+        ["gh", "release", "create", "--latest", tag, "--notes", message, "--title", title, *files],
+        env=env,
+        check=True,
+    )
