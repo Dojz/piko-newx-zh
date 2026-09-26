@@ -1,3 +1,8 @@
+## [3.40.0](https://github.com/Dojz/piko-newx-zh/compare/v3.38.0...v3.40.0) (2026-09-26)
+
+### New Patches
+* NewX: Theme
+
 ## [3.38.0](https://github.com/Dojz/piko-newx-zh/compare/v3.37.1...v3.38.0) (2026-09-25)
 
 ### New Patches
