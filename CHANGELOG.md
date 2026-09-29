@@ -1,3 +1,8 @@
+## [3.43.0](https://github.com/Dojz/piko-newx-zh/compare/v3.42.2...v3.43.0) (2026-09-29)
+
+### New Patches
+* NewX: Redirect downloads to chosen folder
+
 ## [3.42.2](https://github.com/Dojz/piko-newx-zh/compare/v3.42.0...v3.42.2) (2026-09-28)
 
 * No new patches or commits.
