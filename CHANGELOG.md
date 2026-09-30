@@ -1,3 +1,8 @@
+## [3.45.0](https://github.com/Dojz/piko-newx-zh/compare/v3.43.0...v3.45.0) (2026-09-30)
+
+### New Patches
+* NewX: Customize media menu items
+
 ## [3.43.0](https://github.com/Dojz/piko-newx-zh/compare/v3.42.2...v3.43.0) (2026-09-29)
 
 ### New Patches
