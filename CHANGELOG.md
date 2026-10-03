@@ -1,3 +1,8 @@
+## [3.49.0](https://github.com/Dojz/piko-newx-zh/compare/v3.48.0...v3.49.0) (2026-10-03)
+
+### New Patches
+* NewX: Restore pinned home tab
+
 ## [3.48.0](https://github.com/Dojz/piko-newx-zh/compare/v3.47.0...v3.48.0) (2026-10-02)
 
 * No new patches or commits.
