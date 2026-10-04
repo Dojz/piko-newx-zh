@@ -1,3 +1,9 @@
+## [3.51.0](https://github.com/Dojz/piko-newx-zh/compare/v3.49.0...v3.51.0) (2026-10-04)
+
+### New Patches
+* NewX: Clone
+* NewX: Customize profile tabs
+
 ## [3.49.0](https://github.com/Dojz/piko-newx-zh/compare/v3.48.0...v3.49.0) (2026-10-03)
 
 ### New Patches

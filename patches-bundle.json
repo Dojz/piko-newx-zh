@@ -1,8 +1,8 @@
 {
-  "version": "v3.49.0",
-  "download_url": "https://github.com/Dojz/piko-newx-zh/releases/download/v3.49.0/patches.mpp",
-  "created_at": "2026-10-03T05:23:31",
-  "description": "Piko NewX + Instagram \u7b80\u4f53\u4e2d\u6587 patch bundle for Morphe (v3.49.0).",
+  "version": "v3.51.0",
+  "download_url": "https://github.com/Dojz/piko-newx-zh/releases/download/v3.51.0/patches.mpp",
+  "created_at": "2026-10-04T05:57:27",
+  "description": "Piko NewX + Instagram \u7b80\u4f53\u4e2d\u6587 patch bundle for Morphe (v3.51.0).",
   "app_version": "12.29.1-prod.01",
-  "piko_commit": "dfa5319606e32846b926d30379ebb380cf38b45c"
+  "piko_commit": "1c7ae71ec1fb252ad0aaf5b8425c1959d0a167cd"
 }
