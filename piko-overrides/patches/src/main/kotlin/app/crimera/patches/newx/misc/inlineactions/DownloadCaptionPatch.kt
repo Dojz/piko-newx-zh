@@ -241,14 +241,17 @@ internal val newXDownloadCaptionPatch = bytecodePatch {
             })
             expose(eventField)
             val presenters = Fingerprint(definingClass = scope, returnType = stateType,
-                custom = { method, _ -> !AccessFlags.STATIC.isSet(method.accessFlags) &&
-                    method.parameterTypes.any { it.toString() == "Landroidx/compose/runtime/Composer;" }
+                custom = { method, owner -> !AccessFlags.STATIC.isSet(method.accessFlags) &&
+                    method.returnType == stateType &&
+                    method.parameterTypes.any { it.toString() == "Landroidx/compose/runtime/Composer;" } &&
+                    owner.fields.any { !AccessFlags.STATIC.isSet(it.accessFlags) &&
+                        it.type == models.contextualPostDescriptor }
                 }).scopedMatchAll()
             if (presenters.isEmpty()) throw PatchException("NewX $scope translation presenters missing")
             presenters.forEach { match ->
                 val method = match.method
                 val owner = mutableClassDefBy(method.definingClass)
-                val postField = requireExactlyOne("NewX translation presenter post", owner.fields.filter {
+                val postField = requireExactlyOne("NewX translation presenter post in ${owner.type}", owner.fields.filter {
                     !AccessFlags.STATIC.isSet(it.accessFlags) && it.type == models.contextualPostDescriptor
                 })
                 method.instructions.mapIndexedNotNull { index, instruction ->
