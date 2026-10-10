@@ -28,7 +28,10 @@ def fetch(url: str, path: Path, sha256: str) -> None:
 
 
 def run(command: list[str]) -> str:
-    return subprocess.run(command, check=True, text=True, capture_output=True).stdout
+    result = subprocess.run(command, text=True, capture_output=True)
+    if result.returncode:
+        raise RuntimeError(result.stdout + result.stderr)
+    return result.stdout
 
 
 def toolchain(directory: Path, cli: Path) -> tuple[list[str], list[str]]:
@@ -67,7 +70,7 @@ def assemble_compatible_bundle(
         raise FileNotFoundError("Android SDK d8 is unavailable")
     d8 = max(d8s, key=lambda p: tuple(int(v) for v in re.findall(r"\d+", p.parent.name)))
     android_jars = list((sdk / "platforms").glob("*/android.jar"))
-    android_jar = max(android_jars, key=lambda p: int(p.parent.name.removeprefix("android-")))
+    android_jar = max(android_jars, key=lambda p: tuple(int(v) for v in re.findall(r"\d+", p.parent.name)))
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="piko-compatible-") as temporary:
         directory = Path(temporary)
