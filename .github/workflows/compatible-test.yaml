@@ -1,4 +1,4 @@
-name: Compatible caption bundle
+name: Piko bundle
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  packages: read
 
 concurrency:
   group: caption-compatible
@@ -23,22 +24,36 @@ jobs:
         with:
           distribution: zulu
           java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
       - name: Assemble and verify compatible bundle
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python - <<'PY'
           import json, os, tempfile, zipfile
           from pathlib import Path
-          from build_compatible import assemble_compatible_bundle, fetch, run, toolchain
+          from build_compatible import assemble_compatible_bundle, digest, fetch, run, toolchain
+          from build_piko import build_piko_patches
           Path("bins").mkdir(exist_ok=True)
           entries = json.loads(Path("compatibility-bundles.json").read_text())
-          current = entries[-1]
-          fetch(current["download_url"], Path("bins/patches-current.mpp"), current["sha256"])
+          version = "3.54.1"
+          rebuilt = []
+          for source, name in ((entries[0], "patches-legacy.mpp"), (entries[-1], "patches-current.mpp")):
+              os.environ["PIKO_COMMIT"] = source["piko_commit"]
+              artifact = Path("bins") / name
+              build = build_piko_patches(str(artifact), patch_version=version)
+              assert build.commit == source["piko_commit"]
+              rebuilt.append({
+                  "version": "v" + version,
+                  "download_url": artifact.resolve().as_uri(),
+                  "sha256": digest(artifact), "piko_commit": build.commit,
+              })
+          Path("compatibility-bundles.json").write_text(json.dumps(entries + rebuilt, indent=2) + "\n")
           fetch(
               "https://github.com/MorpheApp/morphe-desktop/releases/download/v1.18.1/morphe-desktop-1.18.1-all.jar",
               Path("bins/morphe-cli.jar"),
               "1b506ab5f03d16a2f65026d5e0e1910d01fc1e2152f21eaeb44ed2f30856597b",
           )
-          version = "3.54.0-caption.compat." + os.environ["GITHUB_RUN_NUMBER"]
           versions = assemble_compatible_bundle(
               Path("bins/patches-current.mpp"), Path("bins/patches.mpp"),
               version, Path("bins/morphe-cli.jar"),
@@ -63,9 +78,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "v$TEST_VERSION" bins/patches.mpp supported-versions.json \
+          gh release create "v$TEST_VERSION" bins/patches.mpp bins/patches-current.mpp bins/patches-legacy.mpp supported-versions.json \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --title "Piko compatible caption test $TEST_VERSION" --prerelease \
+            --title "Piko $TEST_VERSION" --prerelease \
             --notes 'Combined NewX implementations. Preserves all upstream 12.28–12.30 targets, Simplified Chinese strings, {text} and {translatedText}.'
           python - <<'PY'
           import json, os
@@ -86,5 +101,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add patches-bundle.json
-          git commit -m "Publish compatible caption metadata [skip ci]"
+          git commit -m "Publish Piko metadata [skip ci]"
           git push origin HEAD:caption-compatible

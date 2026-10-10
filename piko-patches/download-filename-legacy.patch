@@ -239,10 +239,10 @@ index 7dc8b0e..02255d1 100644
          return app.morphe.extension.shared.StringRef.str(name);
      }
 diff --git a/extensions/newx/src/main/java/app/morphe/extension/newx/misc/InlineDownloadButton.java b/extensions/newx/src/main/java/app/morphe/extension/newx/misc/InlineDownloadButton.java
-index 97f0598..76b1943 100644
+index 216fb8c..0b4185c 100644
 --- a/extensions/newx/src/main/java/app/morphe/extension/newx/misc/InlineDownloadButton.java
 +++ b/extensions/newx/src/main/java/app/morphe/extension/newx/misc/InlineDownloadButton.java
-@@ -1198,6 +1198,7 @@ public final class InlineDownloadButton {
+@@ -1151,6 +1151,7 @@ public final class InlineDownloadButton {
          }
  
          String template = DownloadSettings.filenameTemplate();
@@ -250,79 +250,23 @@ index 97f0598..76b1943 100644
          String fileName = DownloadFileName.render(
                  template,
                  postContext,
-@@ -1223,7 +1224,7 @@ public final class InlineDownloadButton {
-         String larger = NewXDownloader.largerVariantUrl(download.url);
-         List<String> fallbacks = larger != null ? Collections.singletonList(larger) : Collections.emptyList();
+@@ -1169,7 +1170,10 @@ public final class InlineDownloadButton {
  
--        final String resolvedFileName = fileName;
-+        final String resolvedFileName = DownloadFileName.limitFileName(fileName);
-         final DownloadRequest request;
+         final DownloadDestination.Target target;
          try {
-             request = new DownloadRequest(
-@@ -1233,7 +1234,7 @@ public final class InlineDownloadButton {
-                     Collections.emptyList(),
-                     resolvedFileName,
-                     download.mimeType,
--                    policy,
-+                    DownloadFileName.usesCaption(template) ? ConflictPolicy.RENAME : policy,
-                     username
-             );
-         } catch (IllegalArgumentException exception) {
-diff --git a/extensions/newx/src/main/java/app/morphe/extension/newx/misc/NativeDownloadRouter.java b/extensions/newx/src/main/java/app/morphe/extension/newx/misc/NativeDownloadRouter.java
-index fce1b62..9fafc66 100644
---- a/extensions/newx/src/main/java/app/morphe/extension/newx/misc/NativeDownloadRouter.java
-+++ b/extensions/newx/src/main/java/app/morphe/extension/newx/misc/NativeDownloadRouter.java
-@@ -96,18 +96,16 @@ public final class NativeDownloadRouter {
-             NewXLogger.printException(
-                     () -> "Failed to resolve the NewX native download media position", exception);
-         }
--        String fileName = DownloadFileName.render(
--                template,
--                postContext,
--                index,
--                mediaCount,
--                extensionFor(mimeType, url)
--        );
--
-         Context applicationContext = context.getApplicationContext();
-         Context safeContext = applicationContext != null ? applicationContext : context;
--        ENQUEUE_EXECUTOR.execute(() ->
--                enqueue(safeContext, kind, fileName, url, mimeType, username));
-+        final int mediaIndex = index;
-+        final int count = mediaCount;
-+        ENQUEUE_EXECUTOR.execute(() -> {
-+            postContext.resolveTranslation(template);
-+            String fileName = DownloadFileName.render(
-+                    template, postContext, mediaIndex, count, extensionFor(mimeType, url));
-+            enqueue(safeContext, kind, fileName, url, mimeType, username, template);
-+        });
-         return true;
-     }
- 
-@@ -117,7 +115,8 @@ public final class NativeDownloadRouter {
-             String fileName,
-             String url,
-             String mimeType,
--            String username
-+            String username,
-+            String template
-     ) {
-         DownloadEngine engine = NewXDownloader.get();
-         if (engine == null) {
-@@ -147,7 +146,7 @@ public final class NativeDownloadRouter {
-                     Collections.emptyList(),
-                     fileName,
-                     mimeType,
--                    policy,
-+                    DownloadFileName.usesCaption(template) ? ConflictPolicy.RENAME : policy,
-                     username
-             );
-         } catch (IllegalArgumentException exception) {
+-            target = DownloadDestination.reserve(context, kind, fileName, download.mimeType, policy);
++            target = DownloadDestination.reserve(
++                    context, kind, DownloadFileName.limitFileName(fileName), download.mimeType,
++                    DownloadFileName.usesCaption(template)
++                            ? DownloadDestination.ConflictPolicy.RENAME : policy);
+         } catch (IOException | RuntimeException exception) {
+             NewXLogger.printException(() -> "Failed to create the NewX download file", exception);
+             // reserve() clears refused folders, so the next tap re-prompts.
 diff --git a/patches/src/main/resources/addresources/values/newx/strings.xml b/patches/src/main/resources/addresources/values/newx/strings.xml
-index 60bb7e8..21e38c8 100644
+index fb67802..d04b6a2 100644
 --- a/patches/src/main/resources/addresources/values/newx/strings.xml
 +++ b/patches/src/main/resources/addresources/values/newx/strings.xml
-@@ -229,7 +229,7 @@
+@@ -225,7 +225,7 @@
      <string name="piko_newx_download_filename_tokens">Tokens</string>
      <string name="piko_newx_download_filename_error_empty">Enter a filename template</string>
      <string name="piko_newx_download_filename_error_unclosed">A brace was opened but never closed</string>

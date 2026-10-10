@@ -68,11 +68,19 @@ def apply_source_overlays(piko_directory: Path) -> None:
 
 
 def apply_download_caption_patch(piko_directory: Path) -> None:
-    patch = REPO_ROOT / "piko-patches" / "download-caption.patch"
-    subprocess.run(
-        ["git", "apply", "--check", str(patch)], cwd=piko_directory, check=True
-    )
-    subprocess.run(["git", "apply", str(patch)], cwd=piko_directory, check=True)
+    patches = [
+        REPO_ROOT / "piko-patches" / "download-caption.patch",
+        REPO_ROOT / "piko-patches" / "download-filename-legacy.patch",
+    ]
+    for patch in patches:
+        check = subprocess.run(
+            ["git", "apply", "--check", str(patch)], cwd=piko_directory,
+            capture_output=True, text=True,
+        )
+        if check.returncode == 0:
+            subprocess.run(["git", "apply", str(patch)], cwd=piko_directory, check=True)
+            return
+    raise ValueError("No download filename patch matches the requested Piko source")
 
 
 def install_instagram_screen_translate_button(piko_directory: Path) -> None:
