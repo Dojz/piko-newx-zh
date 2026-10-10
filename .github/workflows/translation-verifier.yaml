@@ -1,7 +1,7 @@
-name: Publish translation verifier fix
+name: Restore upstream version and download defaults
 on:
   push:
-    branches: [codex/translation-verifier-fix]
+    branches: [codex/upstream-version-defaults]
     paths:
       - .github/workflows/translation-verifier.yaml
       - build_piko.py
@@ -36,10 +36,13 @@ jobs:
           from datetime import datetime, timezone
           from pathlib import Path
           from build_piko import build_piko_patches
-          from build_compatible import assemble_compatible_bundle, digest, fetch
-          tag = 'v3.54.3'
+          from build_compatible import assemble_compatible_bundle, digest, fetch, retain_bundle
+          tag = 'v3.54.2'
           version = tag[1:]
-          entries = json.loads(Path('compatibility-bundles.json').read_text())
+          entries = [entry for entry in json.loads(Path('compatibility-bundles.json').read_text())
+                     if entry['download_url'] not in {
+                         f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/releases/download/{tag}/patches-current.mpp',
+                         f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/releases/download/{tag}/patches-legacy.mpp'}]
           Path('bins').mkdir(exist_ok=True)
           rebuilt = []
           for commit, name in (
@@ -60,21 +63,19 @@ jobs:
           required = {'12.28.0-alpha.01', '12.28.0-alpha.04', '12.28.0-prod.01', '12.29.0-alpha.04',
                       '12.29.1-prod.01', '12.30.0-alpha.05', '12.30.0-prod.01'}
           assert required <= versions
+          Path('compatibility-bundles.json').write_text(json.dumps(entries, indent=2) + '\n')
           for entry, name in zip(rebuilt, ('patches-legacy.mpp', 'patches-current.mpp')):
-              entry['download_url'] = f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/releases/download/{tag}/{name}'
-          Path('compatibility-bundles.json').write_text(json.dumps(entries + rebuilt, indent=2) + '\n')
+              retain_bundle(Path('bins') / name, tag, os.environ['GITHUB_REPOSITORY'], entry['piko_commit'])
           metadata = json.loads(Path('patches-bundle.json').read_text())
           metadata.update(version=tag,
               download_url=f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/releases/download/{tag}/patches.mpp',
               created_at=datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S'),
-              description='Piko 简体中文统一补丁：修复正常浏览时原生翻译状态读取引起的 VerifyError，保留文件名空格和旧版本兼容。',
+              description='Piko 简体中文统一补丁：版本跟随上游，保留闪退修复、旧版本兼容和上游默认下载命名。',
               piko_commit=rebuilt[-1]['piko_commit'], upstream_version='v3.54.2',
               supported_versions=sorted(versions))
           metadata.pop('signature_download_url', None)
           Path('patches-bundle.json').write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + '\n')
           Path('bins/supported-versions.json').write_text(json.dumps(sorted(versions), indent=2) + '\n')
-          readme = Path('README.md')
-          readme.write_text(readme.read_text().replace('**Piko 3.54.2**', '**Piko 3.54.3**'))
           for name in ('patches.mpp', 'patches-current.mpp', 'patches-legacy.mpp'):
               path = Path('bins') / name
               print(f'{name}: {path.stat().st_size} bytes, sha256={digest(path)}')
@@ -83,14 +84,19 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create v3.54.3 bins/patches.mpp bins/patches-current.mpp bins/patches-legacy.mpp \
-            bins/supported-versions.json compatibility-bundles.json \
-            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'Piko 3.54.3' \
-            --notes '修复正常浏览贴文时原生翻译读取钩子复用 p0 导致的 VerifyError。原方法单独执行，入口使用自身对象读取返回状态，保留原有跳转。新旧两套实现均已重建，保留原有版本兼容、原生译文命名和换行转空格。两套 Android 构建、寄存器复用回归测试、文件名测试及统一包检查通过。'
+          if gh release view v3.54.2 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload v3.54.2 bins/*.mpp bins/supported-versions.json compatibility-bundles.json \
+              --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create v3.54.2 bins/*.mpp bins/supported-versions.json compatibility-bundles.json \
+              --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'Piko 3.54.2'
+          fi
+          gh release edit v3.54.2 --repo "$GITHUB_REPOSITORY" --latest --title 'Piko 3.54.2' \
+            --notes '版本号与上游 3.54.2 一致。保留正常浏览闪退修复及新旧版本兼容实现。下载命名使用上游默认模板，原文和原生译文变量仅按用户选择启用。两套构建、回归测试及统一包兼容检查通过。'
       - name: Commit verified source metadata
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add patches-bundle.json compatibility-bundles.json README.md
-          git commit -m 'Point source to verified Piko 3.54.3 verifier fix [skip ci]'
-          git push origin HEAD:codex/translation-verifier-fix
+          git add patches-bundle.json compatibility-bundles.json
+          git commit -m 'Follow upstream 3.54.2 and retain verified compatible builds [skip ci]'
+          git push origin HEAD:codex/upstream-version-defaults

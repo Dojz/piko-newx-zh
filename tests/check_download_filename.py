@@ -8,6 +8,12 @@ import tempfile
 SOURCE = Path(sys.argv[1]) / "extensions/newx/src/main/java/app/morphe/extension/newx/misc/DownloadFileName.java"
 PACKAGE = "app/morphe/extension/newx/misc/"
 
+# Preserve upstream's fallback and registered defaults; captions remain opt-in.
+assert 'DEFAULT_TEMPLATE = "{userName}_{id}"' in SOURCE.read_text()
+settings_patch = Path(sys.argv[1]) / "patches/src/main/kotlin/app/crimera/patches/newx/misc/inlineactions/InlineDownloadButtonPatch.kt"
+filename_setting = settings_patch.read_text().split('id = "newx.content.inline_download.filename_template",', 1)[1].split('visible = false,', 1)[0]
+assert 'defaultValue = "{screenName}_{id}"' in filename_setting
+
 with tempfile.TemporaryDirectory(prefix="caption-filename-") as temporary:
     root = Path(temporary)
 

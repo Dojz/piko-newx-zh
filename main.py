@@ -235,7 +235,7 @@ def process(
     Path(SUPPORTED_VERSIONS).write_text(
         json.dumps(sorted(supported_versions, key=app_version_sort_key), indent=2) + "\n"
     )
-    retain_bundle(Path(PATCHES_CURRENT_MPP), release_tag, REPO, piko_build.commit)
+    retained_bundle = retain_bundle(Path(PATCHES_CURRENT_MPP), release_tag, REPO, piko_build.commit)
 
     print(f"Using Piko x-lite@{piko_commit}")
     patches = get_xlite_patches("bins/morphe-cli.jar", PATCHES_MPP)
@@ -268,7 +268,7 @@ def process(
     signature = sign_artifact(PATCHES_MPP)
     release_assets = [
         PATCHES_MPP, PATCHES_CURRENT_MPP, PATCHES_LIST_ASSET, SUPPORTED_VERSIONS,
-        "compatibility-bundles.json", *([signature] if signature else []),
+        "compatibility-bundles.json", str(retained_bundle), *([signature] if signature else []),
     ]
 
     publish_release(

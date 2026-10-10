@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 import urllib.request
@@ -131,15 +132,21 @@ def assemble_compatible_bundle(
     return covered
 
 
-def retain_bundle(path: Path, release_tag: str, repo: str, commit: str) -> None:
+def retain_bundle(path: Path, release_tag: str, repo: str, commit: str) -> Path:
     entries = json.loads(HISTORY.read_text())
     checksum = digest(path)
-    if any(entry["sha256"] == checksum for entry in entries):
-        return
+    # The visible release follows upstream, so a fork fix can replace assets on the
+    # same tag. Keep history on content-addressed assets instead of mutable names.
+    snapshot = path.with_name(f"{path.stem}-{checksum}{path.suffix}")
+    shutil.copy2(path, snapshot)
+    url = f"https://github.com/{repo}/releases/download/{release_tag}/{snapshot.name}"
+    if any(entry["download_url"] == url for entry in entries):
+        return snapshot
     entries.append({
         "version": release_tag,
-        "download_url": f"https://github.com/{repo}/releases/download/{release_tag}/{path.name}",
+        "download_url": url,
         "sha256": checksum,
         "piko_commit": commit,
     })
     HISTORY.write_text(json.dumps(entries, indent=2) + "\n")
+    return snapshot
