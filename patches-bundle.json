@@ -1,7 +1,7 @@
 {
   "version": "v3.42.2-caption.2",
   "download_url": "https://github.com/Dojz/piko-newx-zh/releases/download/v3.42.2-caption.2/patches.mpp",
-  "created_at": "2026-10-10T05:48:32.261945+00:00",
+  "created_at": "2026-10-10T05:48:32.261945",
   "description": "Piko caption template test",
   "app_version": "12.28.0-prod.01",
   "piko_commit": "a3939be95cd27dd9cf72e25afea32285bd7e80ac"
