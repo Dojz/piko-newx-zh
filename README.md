@@ -1,12 +1,27 @@
 构建 Piko NewX 和 Instagram 简体中文补丁。
 
-Morphe 中同时添加以下两个远程 JSON 源，停用原来的 Piko 正式源：
+Morphe 添加这一个测试源：
 
-- 12.28–12.29：https://raw.githubusercontent.com/Dojz/piko-newx-zh/caption-test-12.28/patches-bundle.json
-- 12.30：https://raw.githubusercontent.com/Dojz/piko-newx-zh/caption-test/patches-bundle.json
+https://raw.githubusercontent.com/Dojz/piko-newx-zh/refs/heads/caption-compatible/patches-bundle.json
 
-使用未修补的原版 APK/APKM，或 Morphe 保存的原版安装包。Morphe 按完整版本号筛选已加载的兼容补丁，不会自动回溯 GitHub 历史发布。源列表中显示仓库名称，不代表 JSON 文件地址发生重定向。
+保留地址中的 `refs/heads/`，避免 Morphe 将分支改写为 main。正式源的发布流程已在 PR #1 中准备好，合并后可继续使用仓库根地址。
 
-12.28–12.29 源基于 Piko v3.42.2，保留 12.28.0-prod.01、12.28.0-alpha.01、12.28.0-alpha.04、12.29.0-alpha.04、12.29.1-prod.01 和 12.30.0-alpha.05 的上游兼容声明。12.30 源基于 Piko v3.54.0，正式目标为 12.30.0-prod.01。其他具体版本需要相应 APK/APKM 验证。
+更新源后，使用未修补的原版 APK/APKM，或 Morphe 保存的原版安装包进行修补。使用同一个 Morphe 签名密钥，可覆盖安装已有的修补版。停用此前单独添加的 caption-test、caption-test-12.28 测试源，避免重复选择补丁。
+
+| X 完整版本 | 对应实现 | 上游标记 |
+| --- | --- | --- |
+| 12.28.0-alpha.01 | Piko 3.42.2 | 实验性 |
+| 12.28.0-alpha.04 | Piko 3.42.2 | 实验性 |
+| 12.28.0-prod.01 | Piko 3.42.2 | 正式 |
+| 12.29.0-alpha.04 | Piko 3.42.2 | 实验性 |
+| 12.29.1-prod.01 | Piko 3.42.2 | 实验性 |
+| 12.30.0-alpha.05 | Piko 3.42.2 | 实验性 |
+| 12.30.0-prod.01 | Piko 3.54.0 | 正式 |
+
+实验性目标需要在 Morphe 中启用实验版本。以上保留上游的兼容声明；构建和补丁加载检查通过，具体 APK 的修补及运行仍需实机验证。
 
 文件名模板变量：`{text}`（原文）、`{translatedText}`（按系统语言翻译）。使用任一变量即可保存模板。翻译失败回退原文，文件名按 UTF-8 字节截断，重名追加数字。
+
+每次发布把新实现和仍有用途的旧实现放入同一个 `.mpp`。同一 X 版本只保留最新声明支持它的实现，Morphe 按 APK 的完整版本号筛选补丁；推荐版本仍由最新可用目标决定。以后新增版本时保留旧目标，无需切换源。
+
+`compatibility-bundles.json` 记录原始补丁包、源码提交和 SHA-256。新版原始包另存为 `patches-current.mpp`，统一包为 `patches.mpp`。每次构建验证兼容目标、同名补丁冲突、扩展依赖和 DEX 完整性，通过后才更新源地址。Morphe 本身不负责回溯历史发布。
