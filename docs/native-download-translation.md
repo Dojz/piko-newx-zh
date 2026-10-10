@@ -34,10 +34,20 @@ Missing language metadata does not authorize original-text fallback. Requests ru
 the UI thread while the download worker waits at most 20 seconds. Errors abort naming
 with a localized message and do not silently substitute the source language.
 
-Validation so far: exact uploaded DEX anchor/field inspection; Kotlin compilation against
-both original patch implementations; host checks for same-language fallback, cached
-results, lazy selected-post reads, one request for concurrent waiters, temporary-data
-cleanup, timeouts and native callback errors. Local full Gradle build cannot resolve
-GitHub Packages dependencies without credentials. GitHub CI builds both checkouts,
-including `:patches:build`, and produces artifacts without updating a release source.
-Full APK patching and phone runtime results must be recorded before release.
+Validated overlay source: `6659a0bdaebe082c5669694e67d617314cc538a5`.
+Both pinned implementations passed real Android builds and full `:patches:build`
+tests in [Actions run 38036580283](https://github.com/Dojz/piko-newx-zh/actions/runs/38036580283).
+Host checks cover same-language fallback, cached results, selected-post reads,
+concurrent request deduplication, cleanup, timeout, callback failure and unsupported
+post objects. Filename checks cover spaces, Unicode byte limits and temporary cleanup.
+
+Native presenters retain a model interface implemented by ContextualPost. The resolver
+accepts that interface or the concrete model, requires a unique post field, and identifies
+two Grok presenters plus one standard presenter in the uploaded DEX. Exact original-base
+APK patching through `patch-twitter.sh` succeeded at 512 MB: 44 patches applied once,
+including `NewX: Inline download button`, and the APK was saved. Final DEX inspection
+confirms six injected bridge methods and six state-capture calls across the three presenters.
+Unified MPP SHA-256: `8f99240d1181b6f5ba28f74a7908eeb0d7f2af93fea9dccb424719206ed51a9a`.
+The two setup/resolver failures and their retests are recorded in
+[newx-resolver-linter/2026-10-10-native-caption-12.28.md](newx-resolver-linter/2026-10-10-native-caption-12.28.md).
+Phone runtime remains untested; the artifact is a test MPP and no release source was updated.
