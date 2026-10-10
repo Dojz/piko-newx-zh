@@ -1,0 +1,64 @@
+name: Publish Piko MPP
+on:
+  push:
+    branches: [codex/download-caption-template]
+    paths: [.github/workflows/publish-native-mpp.yaml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: piko-newx-zh-release
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify validated source
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/38036580283" > /tmp/validated-run.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          run = json.loads(Path('/tmp/validated-run.json').read_text())
+          assert run['conclusion'] == 'success'
+          assert run['head_sha'] == '6659a0bdaebe082c5669694e67d617314cc538a5'
+          PY
+          git merge-base --is-ancestor 6659a0bdaebe082c5669694e67d617314cc538a5 HEAD
+          git diff --exit-code 6659a0bdaebe082c5669694e67d617314cc538a5 HEAD -- build_piko.py piko-overrides piko-patches translations compatibility build_compatible.py tests
+      - uses: actions/download-artifact@v4
+        with:
+          name: Piko
+          path: bins
+          run-id: 38036580283
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify artifact bytes
+        run: |
+          python - <<'PY'
+          import hashlib, zipfile
+          from pathlib import Path
+          expected = {
+              'patches.mpp': '8f99240d1181b6f5ba28f74a7908eeb0d7f2af93fea9dccb424719206ed51a9a',
+              'patches-current.mpp': '7e8216c9ca079a8efa24815907cf4b728fc3c29a5fafa7a4fc68550ffae546b2',
+              'patches-legacy.mpp': '5fd524c4d03154518242179591c1a5bdd6d04b7a812a1730862bbbb0a2b1a9df',
+          }
+          for name, checksum in expected.items():
+              path = Path('bins') / name
+              assert hashlib.sha256(path.read_bytes()).hexdigest() == checksum, name
+              with zipfile.ZipFile(path) as bundle:
+                  assert 'Version: 3.54.1' in bundle.read('META-INF/MANIFEST.MF').decode()
+          PY
+      - name: Publish the MPP download
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release create v3.54.1 bins/patches.mpp bins/patches-current.mpp bins/patches-legacy.mpp \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'Piko 3.54.1' \
+            --notes '原文与 X 原生译文文件名，保留空格。仅读取目标贴文，命名后清理临时译文；同语言直接使用原文。保留旧版兼容实现。12.28.0-prod.01 原包修补通过，手机实际下载尚待验证。使用 patches.mpp 在 Morphe 中自行修补。'
