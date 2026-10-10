@@ -4,11 +4,9 @@
   </a>
 </p>
 
-Builds and publishes the [NewX](https://github.com/crimera/piko/tree/x-lite) patch bundle from the [Piko `x-lite` branch](https://github.com/crimera/piko/tree/x-lite).
+Builds and publishes the [NewX](https://github.com/crimera/piko/tree/x-lite) patch bundle from the [Piko `x-lite` branch](https://github.com/crimera/piko/tree/x-lite). test for zh.
 
 # Credits
 - [morphe](https://github.com/MorpheApp) - patcher
 - [revanced](https://github.com/ReVanced) - previous patcher
 - [j-hc](https://github.com/j-hc) - Project is inspired by j-hc's revanced builder template.
-
-test for zh.
