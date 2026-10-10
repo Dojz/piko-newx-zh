@@ -8,6 +8,10 @@ on:
       - "translations/**"
       - "build_piko.py"
       - "build_variants.py"
+      - "build_compatible.py"
+      - "compatibility/**"
+      - "compatibility-bundles.json"
+      - "piko-patches/**"
       - "main.py"
       - "utils.py"
       - "piko-overrides/**"
@@ -22,6 +26,7 @@ concurrency:
 
 permissions:
   contents: write
+  packages: read
 
 jobs:
   build:
@@ -54,7 +59,7 @@ jobs:
           set -euo pipefail
           BUILD=true
           if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ -f patches-bundle.json ]; then
-            LOCAL_VERSION=$(jq -r '.version // ""' patches-bundle.json)
+            LOCAL_VERSION=$(jq -r '.upstream_version // .version // ""' patches-bundle.json)
             LOCAL_COMMIT=$(jq -r '.piko_commit // ""' patches-bundle.json)
             LOCAL_URL=$(jq -r '.download_url // ""' patches-bundle.json)
             if [ "$LOCAL_VERSION" = "${{ steps.upstream.outputs.version }}" ] \
@@ -99,7 +104,7 @@ jobs:
           uv run main.py \
             --m 1 \
             --v "${{ steps.upstream.outputs.app_version }}" \
-            --release-tag "${{ steps.upstream.outputs.version }}" \
+            --release-tag "${{ steps.upstream.outputs.version }}-zh.${GITHUB_RUN_NUMBER}" \
             --semantic-bump true
 
       - name: Commit localized release metadata
@@ -109,7 +114,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add patches-bundle.json CHANGELOG.md
+          git add patches-bundle.json CHANGELOG.md compatibility-bundles.json
           if git diff --cached --quiet; then
             exit 0
           fi

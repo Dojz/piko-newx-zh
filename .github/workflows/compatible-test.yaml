@@ -1,0 +1,90 @@
+name: Compatible caption bundle
+
+on:
+  push:
+    branches: [caption-compatible]
+    paths-ignore:
+      - patches-bundle.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: caption-compatible
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: "21"
+      - name: Assemble and verify compatible bundle
+        run: |
+          python - <<'PY'
+          import json, os, tempfile, zipfile
+          from pathlib import Path
+          from build_compatible import assemble_compatible_bundle, fetch, run, toolchain
+          Path("bins").mkdir(exist_ok=True)
+          entries = json.loads(Path("compatibility-bundles.json").read_text())
+          current = entries[-1]
+          fetch(current["download_url"], Path("bins/patches-current.mpp"), current["sha256"])
+          fetch(
+              "https://github.com/MorpheApp/morphe-desktop/releases/download/v1.18.1/morphe-desktop-1.18.1-all.jar",
+              Path("bins/morphe-cli.jar"),
+              "1b506ab5f03d16a2f65026d5e0e1910d01fc1e2152f21eaeb44ed2f30856597b",
+          )
+          version = "3.54.0-caption.compat." + os.environ["GITHUB_RUN_NUMBER"]
+          versions = assemble_compatible_bundle(
+              Path("bins/patches-current.mpp"), Path("bins/patches.mpp"),
+              version, Path("bins/morphe-cli.jar"),
+          )
+          required = {"12.28.0-alpha.01", "12.28.0-alpha.04", "12.28.0-prod.01",
+                      "12.29.0-alpha.04", "12.29.1-prod.01", "12.30.0-alpha.05", "12.30.0-prod.01"}
+          assert required <= versions
+          with tempfile.TemporaryDirectory() as temporary:
+              directory = Path(temporary)
+              checker, relocator = toolchain(directory, Path("bins/morphe-cli.jar").resolve())
+              future = directory / "future.jar"
+              run([*relocator, "bins/patches-current.mpp", str(future), "retentioncheck", "12.30.0-prod.01"])
+              with zipfile.ZipFile("bins/patches-current.mpp") as original, zipfile.ZipFile(future, "a") as snapshot:
+                  snapshot.writestr("META-INF/MANIFEST.MF", original.read("META-INF/MANIFEST.MF"))
+              retained = assemble_compatible_bundle(future, directory / "retention-check.mpp", "retention-check", Path("bins/morphe-cli.jar"))
+              assert required <= retained
+          Path("supported-versions.json").write_text(json.dumps(sorted(versions), indent=2) + "\n")
+          with open(os.environ["GITHUB_ENV"], "a") as output:
+              output.write("TEST_VERSION=" + version + "\n")
+          PY
+      - name: Publish compatible test bundle
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v$TEST_VERSION" bins/patches.mpp supported-versions.json \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Piko compatible caption test $TEST_VERSION" --prerelease \
+            --notes 'Combined NewX implementations. Preserves all upstream 12.28–12.30 targets, Simplified Chinese strings, {text} and {translatedText}.'
+          python - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+          version = "v" + os.environ["TEST_VERSION"]
+          metadata = {
+              "version": version,
+              "download_url": "https://github.com/" + os.environ["GITHUB_REPOSITORY"] + "/releases/download/" + version + "/patches.mpp",
+              "created_at": datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),
+              "description": "Piko 简体中文及文案变量，保留旧版兼容实现",
+              "app_version": "12.30.0-prod.01",
+              "supported_versions": json.loads(Path("supported-versions.json").read_text()),
+              "piko_commit": "f116ed9349db4f486bfb216071d18207901d5107"
+          }
+          Path("patches-bundle.json").write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n")
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add patches-bundle.json
+          git commit -m "Publish compatible caption metadata [skip ci]"
+          git push origin HEAD:caption-compatible

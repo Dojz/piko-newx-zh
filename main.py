@@ -3,9 +3,11 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import re
+import shutil
 
 import github
 from build_piko import PikoBuild, build_piko_patches
+from build_compatible import assemble_compatible_bundle, retain_bundle
 from build_variants import get_xlite_patches
 from constants import REPO
 from download_bins import download_morphe_cli
@@ -16,7 +18,9 @@ CHANGELOG_FILE = "CHANGELOG.md"
 PATCHES_BUNDLE_FILE = "patches-bundle.json"
 PATCHES_LIST_ASSET = "patches-list.json"
 PATCHES_MPP = "bins/patches.mpp"
-RELEASE_TAG_PATTERN = re.compile(r"^v\d+\.\d+\.\d+$")
+PATCHES_CURRENT_MPP = "bins/patches-current.mpp"
+SUPPORTED_VERSIONS = "supported-versions.json"
+RELEASE_TAG_PATTERN = re.compile(r"^v\d+\.\d+\.\d+(?:-zh\.\d+)?$")
 LEGACY_RELEASE_PATTERN = re.compile(r"^(?P<app>.+)-(?P<piko>[0-9a-f]{7,40})$")
 APP_VERSION_PATTERN = re.compile(
     r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)"
@@ -133,6 +137,7 @@ def write_patches_bundle(
     piko_build: PikoBuild,
     repo: str = REPO,
     signature_available: bool = False,
+    supported_versions: set[str] | None = None,
 ) -> None:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
     metadata = {
@@ -142,7 +147,10 @@ def write_patches_bundle(
         "description": f"Piko NewX + Instagram 简体中文 patch bundle for Morphe ({release_tag}).",
         "app_version": app_version,
         "piko_commit": piko_build.commit,
+        "upstream_version": release_tag.split("-zh.")[0],
     }
+    if supported_versions is not None:
+        metadata["supported_versions"] = sorted(supported_versions, key=app_version_sort_key)
     if signature_available:
         metadata["signature_download_url"] = (
             f"https://github.com/{repo}/releases/download/{release_tag}/patches.mpp.asc"
@@ -219,6 +227,16 @@ def process(
 
     download_morphe_cli(include_prereleases=False)
 
+    shutil.copy2(PATCHES_MPP, PATCHES_CURRENT_MPP)
+    supported_versions = assemble_compatible_bundle(
+        Path(PATCHES_CURRENT_MPP), Path(PATCHES_MPP),
+        release_tag.removeprefix("v"), Path("bins/morphe-cli.jar"),
+    )
+    Path(SUPPORTED_VERSIONS).write_text(
+        json.dumps(sorted(supported_versions, key=app_version_sort_key), indent=2) + "\n"
+    )
+    retain_bundle(Path(PATCHES_CURRENT_MPP), release_tag, REPO, piko_build.commit)
+
     print(f"Using Piko x-lite@{piko_commit}")
     patches = get_xlite_patches("bins/morphe-cli.jar", PATCHES_MPP)
     write_patches_list(patches)
@@ -248,7 +266,10 @@ def process(
     message = "\n\n".join(release_sections)
 
     signature = sign_artifact(PATCHES_MPP)
-    release_assets = [PATCHES_MPP, PATCHES_LIST_ASSET, *( [signature] if signature else [] )]
+    release_assets = [
+        PATCHES_MPP, PATCHES_CURRENT_MPP, PATCHES_LIST_ASSET, SUPPORTED_VERSIONS,
+        "compatibility-bundles.json", *([signature] if signature else []),
+    ]
 
     publish_release(
         release_tag,
@@ -261,6 +282,7 @@ def process(
         app_version,
         piko_build,
         signature_available=signature is not None,
+        supported_versions=supported_versions,
     )
 
 

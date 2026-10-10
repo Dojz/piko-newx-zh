@@ -1,0 +1,14 @@
+[
+  {
+    "version": "v3.42.2-caption.3",
+    "download_url": "https://github.com/Dojz/piko-newx-zh/releases/download/v3.42.2-caption.3/patches.mpp",
+    "sha256": "b175d5fbfee5a4265cecccbe3ece01b3876bc3696d3fdfbedaf8a47fea38a90e",
+    "piko_commit": "a3939be95cd27dd9cf72e25afea32285bd7e80ac"
+  },
+  {
+    "version": "v3.54.0-caption.3",
+    "download_url": "https://github.com/Dojz/piko-newx-zh/releases/download/v3.54.0-caption.3/patches.mpp",
+    "sha256": "15c41f2fd056a1f427bfc156d4d0a58bba1d1d2d7e855d91e87d9d4e97623a56",
+    "piko_commit": "f116ed9349db4f486bfb216071d18207901d5107"
+  }
+]
