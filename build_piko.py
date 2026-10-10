@@ -84,7 +84,8 @@ def apply_download_caption_patch(piko_directory: Path) -> None:
 
 
 def apply_native_download_translation(piko_directory: Path) -> None:
-    for folder in ("extensions/newx", "patches/src/main/kotlin/app/crimera/patches/newx"):
+    for folder in ("extensions/newx", "patches/src/main/kotlin/app/crimera/patches/newx",
+                   "patches/src/test/kotlin/app/crimera/patches/newx"):
         source_root = PIKO_OVERLAY_DIR / folder
         for source in source_root.rglob("*"):
             if source.is_file():
@@ -382,12 +383,20 @@ def build_piko_patches(
         if patch_version is not None:
             set_project_version(piko_directory, patch_version)
 
-        subprocess.run(
-            ["./gradlew", "clean", *([":patches:build"] if os.environ.get("PIKO_VALIDATE") else []), "buildAndroid"],
-            cwd=piko_directory,
-            env=os.environ.copy(),
-            check=True,
-        )
+        try:
+            subprocess.run(
+                ["./gradlew", "clean", *([":patches:build"] if os.environ.get("PIKO_VALIDATE") else []), "buildAndroid"],
+                cwd=piko_directory,
+                env=os.environ.copy(),
+                check=True,
+            )
+        except subprocess.CalledProcessError:
+            # The temporary checkout is removed on failure; keep the regression failure useful
+            # in Actions logs without publishing unrelated reports or build directories.
+            reports = piko_directory / "patches/build/test-results/test"
+            for report in reports.glob("TEST-*DownloadCaptionPatchTest.xml"):
+                print(report.read_text()[:24000], flush=True)
+            raise
 
         artifacts_directory = piko_directory / "patches" / "build" / "libs"
         if patch_version is not None:
