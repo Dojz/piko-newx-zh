@@ -1,0 +1,55 @@
+name: Piko validation
+on:
+  push:
+    branches: [codex/download-caption-template]
+    paths-ignore: [patches-bundle.json]
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+      - run: python tests/check_download_caption.py
+      - name: Build and verify both implementations
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PIKO_VALIDATE: "1"
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          from build_piko import build_piko_patches
+          from build_compatible import assemble_compatible_bundle, digest, fetch
+          entries = json.loads(Path("compatibility-bundles.json").read_text())
+          Path("bins").mkdir(exist_ok=True)
+          rebuilt = []
+          for source, name in ((entries[0], "patches-legacy.mpp"), (entries[-1], "patches-current.mpp")):
+              os.environ["PIKO_COMMIT"] = source["piko_commit"]
+              artifact = Path("bins") / name
+              build = build_piko_patches(str(artifact), patch_version="3.54.1")
+              rebuilt.append({"version": "v3.54.1", "download_url": artifact.resolve().as_uri(),
+                              "sha256": digest(artifact), "piko_commit": build.commit})
+          Path("compatibility-bundles.json").write_text(json.dumps(entries + rebuilt))
+          fetch("https://github.com/MorpheApp/morphe-desktop/releases/download/v1.18.1/morphe-desktop-1.18.1-all.jar",
+                Path("bins/morphe-cli.jar"), "1b506ab5f03d16a2f65026d5e0e1910d01fc1e2152f21eaeb44ed2f30856597b")
+          versions = assemble_compatible_bundle(Path("bins/patches-current.mpp"), Path("bins/patches.mpp"),
+                                                "3.54.1", Path("bins/morphe-cli.jar"))
+          required = {"12.28.0-alpha.01", "12.28.0-alpha.04", "12.28.0-prod.01", "12.29.0-alpha.04",
+                      "12.29.1-prod.01", "12.30.0-alpha.05", "12.30.0-prod.01"}
+          assert required <= versions
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Piko
+          path: |
+            bins/patches.mpp
+            bins/patches-legacy.mpp
+            bins/patches-current.mpp

@@ -67,6 +67,44 @@ def apply_source_overlays(piko_directory: Path) -> None:
         shutil.copy2(source, target)
 
 
+def apply_download_caption_patch(piko_directory: Path) -> None:
+    patches = [
+        REPO_ROOT / "piko-patches" / "download-caption.patch",
+        REPO_ROOT / "piko-patches" / "download-filename-legacy.patch",
+    ]
+    for patch in patches:
+        check = subprocess.run(
+            ["git", "apply", "--check", str(patch)], cwd=piko_directory,
+            capture_output=True, text=True,
+        )
+        if check.returncode == 0:
+            subprocess.run(["git", "apply", str(patch)], cwd=piko_directory, check=True)
+            return
+    raise ValueError("No download filename patch matches the requested Piko source")
+
+
+def apply_native_download_translation(piko_directory: Path) -> None:
+    for folder in ("extensions/newx", "patches/src/main/kotlin/app/crimera/patches/newx"):
+        source_root = PIKO_OVERLAY_DIR / folder
+        for source in source_root.rglob("*"):
+            if source.is_file():
+                target = piko_directory / source.relative_to(PIKO_OVERLAY_DIR)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source, target)
+    patch = piko_directory / "patches/src/main/kotlin/app/crimera/patches/newx/misc/inlineactions/InlineDownloadButtonPatch.kt"
+    text = patch.read_text()
+    cardinality_imports = re.findall(r"^import ([\w.]+\.requireExactlyOne)$", text, re.MULTILINE)
+    if len(cardinality_imports) != 1:
+        raise ValueError("NewX resolver cardinality import changed")
+    caption = patch.with_name("DownloadCaptionPatch.kt")
+    caption.write_text(caption.read_text().replace(
+        "app.crimera.patches.newx.utils.requireExactlyOne", cardinality_imports[0]))
+    anchor = "            newXInlineDownloadModelResolutionPatch,"
+    if text.count(anchor) != 1:
+        raise ValueError("NewX inline download dependency anchor changed")
+    patch.write_text(text.replace(anchor, anchor + "\n            newXDownloadCaptionPatch,", 1))
+
+
 def install_instagram_screen_translate_button(piko_directory: Path) -> None:
     """Install zh-CN Instagram UI enhancements and their three opt-in switches."""
     path = piko_directory / INSTAGRAM_ACTIONBAR
@@ -335,12 +373,14 @@ def build_piko_patches(
         # intentionally not applied here. They are retained in-repo only for
         # development until their native Litho/translation hooks are ready.
         apply_zh_cn(piko_directory)
+        apply_download_caption_patch(piko_directory)
+        apply_native_download_translation(piko_directory)
 
         if patch_version is not None:
             set_project_version(piko_directory, patch_version)
 
         subprocess.run(
-            ["./gradlew", "clean", "buildAndroid"],
+            ["./gradlew", "clean", *([":patches:build"] if os.environ.get("PIKO_VALIDATE") else []), "buildAndroid"],
             cwd=piko_directory,
             env=os.environ.copy(),
             check=True,

@@ -209,7 +209,7 @@ piko_newx_download_filename_title,Filename template,文件名模板
 piko_newx_download_filename_tokens,Tokens,变量
 piko_newx_download_filename_error_empty,Enter a filename template,请输入文件名模板
 piko_newx_download_filename_error_unclosed,A brace was opened but never closed,有一个左花括号未闭合
-piko_newx_download_filename_error_static,Add {id} or {timestamp} so different posts do not overwrite each other,请加入 {id} 或 {timestamp}，避免不同帖子相互覆盖
+piko_newx_download_filename_error_static,"Add {id}, {timestamp}, {text} or {translatedText}",请加入 {id}、{timestamp}、{text} 或 {translatedText}
 piko_newx_download_filename_error_unknown,Unknown token {%1$s},未知变量 {%1$s}
 piko_newx_download_first_run_title,Choose a download folder,选择下载文件夹
 piko_newx_download_first_run_images,Downloaded images need a folder. Pick one so they are saved where you can find them.,下载图片需要指定文件夹。请选择一个方便查找的位置。
@@ -430,3 +430,60 @@ piko_newx_setting_validation_failed,Could not validate this setting,无法验证
 piko_newx_settings_search_hint,Search settings,搜索设置
 piko_newx_settings_search_clear,Clear search,清除搜索
 piko_newx_settings_search_no_results,"No results for ""%s""",没有找到“%s”的结果
+piko_newx_restore_pinned_tab_title,Reopen last pinned tab,重新打开上次固定的标签
+piko_newx_restore_pinned_tab_summary,"Starts on the pinned list, topic or community tab you last viewed instead of the default home tab",启动时打开上次查看的固定列表、话题或社群标签
+piko_newx_hide_timeline_add_tab_title,Hide add tab button,隐藏添加标签按钮
+piko_newx_hide_timeline_add_tab_summary,Removes the + button that adds tabs from the NewX home timeline tabs bar,移除 NewX 首页时间线标签栏中的加号按钮
+piko_newx_group_timeline_tabs_title,Timeline tabs,时间线标签
+piko_newx_group_timeline_tabs_summary,Choose which timeline tabs are shown and hide the tabs bar or its add button,选择显示哪些时间线标签，并隐藏标签栏或添加按钮
+piko_newx_group_theme_title,Theme,主题
+piko_newx_group_theme_summary,"Choose the Default, Material You, Material You (High Contrast), or Dim theme",选择默认、Material You、Material You（高对比度）或暗淡主题
+piko_newx_theme_title,Theme,主题
+piko_newx_theme_summary,Default keeps the original NewX colors; Material You follows your wallpaper colors; Material You (High Contrast) uses white and black backgrounds; Dim restores the classic static look.,默认保留 NewX 原始颜色；Material You 跟随壁纸配色；Material You（高对比度）使用黑白背景；暗淡恢复经典静态配色。
+piko_newx_theme_default,Default,默认
+piko_newx_theme_material,Material You,Material You
+piko_newx_theme_contrast,Material You (High Contrast),Material You（高对比度）
+piko_newx_theme_dim,Dim,暗淡
+piko_newx_inline_download_redirect_native_title,Redirect built-in download buttons,重定向内置下载按钮
+piko_newx_inline_download_redirect_native_summary,Saves media from NewX\'s own download buttons to the chosen folders using the filename template,通过 NewX 内置下载按钮下载时，使用文件名模板保存到所选文件夹
+piko_newx_media_picker_resolution_button_title,Show resolution chooser,显示分辨率选择按钮
+piko_newx_media_picker_resolution_button_summary,Shows the icon that opens the resolution chooser per media item in the download media picker,在下载媒体选择器中，为每个媒体显示打开分辨率选择器的图标
+piko_newx_download_options_folder_session,Access is not remembered,未记住访问权限
+piko_newx_download_options_folder_unwritable,That folder cannot be written to. Pick a different folder.,无法写入此文件夹，请选择其他文件夹。
+piko_newx_native_inline_action_spacing_title,Native action bar spacing,原生操作栏间距
+piko_newx_native_inline_action_spacing_summary,"On: NewX\'s packed action spacing (12.28.0-alpha.04 and newer). Off: the even spacing older NewX releases used, where hiding an action leaves no gap.",开启：使用 NewX 紧凑的操作栏间距（12.28.0-alpha.04 及更新版本）。关闭：使用旧版均匀间距，隐藏操作后不留空位。
+piko_newx_nav_badges_title,Hide badges,隐藏角标
+piko_newx_nav_badges_summary,Choose which navigation bar items hide their notification dots,选择隐藏哪些导航栏项目的通知圆点
+piko_newx_profile_tabs_editor_title,Profile tabs,个人资料标签
+piko_newx_profile_tabs_editor_summary,Choose which profile tabs are shown and in what order,选择个人资料标签的显示项目和顺序
+piko_newx_profile_tabs_editor_hint,Drag a tab by its handle to reorder it. Use the switches to hide tabs. Changes apply after an app restart.,拖动标签的手柄调整顺序，使用开关隐藏标签。重启应用后生效。
+piko_newx_profile_tabs_editor_drag,Drag to reorder,拖动调整顺序
+piko_newx_profile_tabs_editor_restart,Restart app to apply changes,重启应用以应用更改
+piko_newx_profile_tabs_editor_restart_title,Restart app?,重启应用？
+piko_newx_profile_tabs_editor_restart_message,The profile tab changes take effect after the app restarts.,重启应用后，个人资料标签的更改才会生效。
+piko_newx_profile_tabs_editor_restart_confirm,Restart,重启
+piko_newx_profile_tabs_editor_reset,Reset to default,恢复默认
+piko_newx_profile_tabs_editor_reset_title,Reset profile tabs?,重置个人资料标签？
+piko_newx_profile_tabs_editor_reset_message,This restores the default tab order and shows every profile tab again. Changes apply after an app restart.,恢复默认标签顺序，并重新显示所有标签。重启应用后生效。
+piko_newx_profile_tabs_editor_reset_confirm,Reset,重置
+piko_newx_media_sheet_items_title,Media menu items to hide,要隐藏的媒体菜单项
+piko_newx_media_sheet_items_summary,Choose which items are hidden from the NewX photo and video long-press menu,选择从 NewX 照片和视频长按菜单中隐藏的项目
+piko_newx_media_sheet_post_photo,Post photo,发布照片
+piko_newx_media_sheet_post_gif,Post GIF,发布 GIF
+piko_newx_media_sheet_post_video,Post video,发布视频
+piko_newx_media_sheet_copy_gif_link,Copy GIF link,复制 GIF 链接
+piko_newx_media_sheet_copy_video_link,Copy video link,复制视频链接
+piko_newx_media_sheet_copy_photo,Copy photo,复制照片
+piko_newx_media_sheet_save,Save,保存
+piko_newx_media_sheet_save_photo,Save photo,保存照片
+piko_newx_media_sheet_save_video,Save video,保存视频
+piko_newx_media_sheet_save_4k_photo,Save 4K photo,保存 4K 照片
+piko_newx_media_sheet_share,Share,分享
+piko_newx_media_sheet_make_video_with_grok,Make video with Grok,使用 Grok 制作视频
+piko_newx_media_sheet_edit_image_with_grok,Edit image with Grok,使用 Grok 编辑图片
+piko_newx_media_sheet_add_to_offline_videos,Add to offline videos,添加到离线视频
+piko_newx_media_sheet_reload_to_offline_videos,Reload to offline videos,重新加载到离线视频
+piko_newx_media_sheet_remove_from_offline_videos,Remove from offline videos,从离线视频移除
+morphe_settings_import_reset,NewX settings reset to defaults,NewX 设置已恢复默认
+morphe_settings_import_success,Restored %1$d NewX settings,已恢复 %1$d 项 NewX 设置
+morphe_settings_import_failure_parse,Could not restore NewX settings: %1$s,无法恢复 NewX 设置：%1$s
