@@ -4,6 +4,7 @@ import app.morphe.patcher.patch.Compatibility;
 import app.morphe.patcher.patch.Patch;
 import app.morphe.patcher.patch.PatchLoader;
 import java.io.File;
+import java.io.BufferedInputStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeMap;
@@ -36,7 +37,7 @@ public final class VerifyBundle {
             if (!dexEntries.isEmpty()) {
                 Set<String> dexClasses = new HashSet<>();
                 for (var entry : dexEntries) {
-                    try (var stream = zip.getInputStream(entry)) {
+                    try (var stream = new BufferedInputStream(zip.getInputStream(entry))) {
                         var dex = DexBackedDexFile.fromInputStream(Opcodes.getDefault(), stream);
                         for (var definition : dex.getClasses()) {
                             if (!dexClasses.add(definition.getType())) throw new IllegalStateException("Duplicate dex class");

@@ -26,9 +26,9 @@ jobs:
       - name: Assemble and verify compatible bundle
         run: |
           python - <<'PY'
-          import json, os
+          import json, os, tempfile, zipfile
           from pathlib import Path
-          from build_compatible import assemble_compatible_bundle, fetch
+          from build_compatible import assemble_compatible_bundle, fetch, run, toolchain
           Path("bins").mkdir(exist_ok=True)
           entries = json.loads(Path("compatibility-bundles.json").read_text())
           current = entries[-1]
@@ -46,6 +46,15 @@ jobs:
           required = {"12.28.0-alpha.01", "12.28.0-alpha.04", "12.28.0-prod.01",
                       "12.29.0-alpha.04", "12.29.1-prod.01", "12.30.0-alpha.05", "12.30.0-prod.01"}
           assert required <= versions
+          with tempfile.TemporaryDirectory() as temporary:
+              directory = Path(temporary)
+              checker, relocator = toolchain(directory, Path("bins/morphe-cli.jar").resolve())
+              future = directory / "future.jar"
+              run([*relocator, "bins/patches-current.mpp", str(future), "retentioncheck", "12.30.0-prod.01"])
+              with zipfile.ZipFile("bins/patches-current.mpp") as original, zipfile.ZipFile(future, "a") as snapshot:
+                  snapshot.writestr("META-INF/MANIFEST.MF", original.read("META-INF/MANIFEST.MF"))
+              retained = assemble_compatible_bundle(future, directory / "retention-check.mpp", "retention-check", Path("bins/morphe-cli.jar"))
+              assert required <= retained
           Path("supported-versions.json").write_text(json.dumps(sorted(versions), indent=2) + "\n")
           with open(os.environ["GITHUB_ENV"], "a") as output:
               output.write("TEST_VERSION=" + version + "\n")
