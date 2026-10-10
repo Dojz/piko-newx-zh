@@ -86,7 +86,7 @@ jobs:
           gh release create v3.54.3 bins/patches.mpp bins/patches-current.mpp bins/patches-legacy.mpp \
             bins/supported-versions.json compatibility-bundles.json \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'Piko 3.54.3' \
-            --notes '修复正常浏览贴文时原生翻译读取钩子复用 p0 导致的 VerifyError。入口保存对象，返回时读取保存的对象。新旧两套实现均已重建，保留原有版本兼容、原生译文命名和换行转空格。两套 Android 构建、寄存器复用回归测试、文件名测试及统一包检查通过。'
+            --notes '修复正常浏览贴文时原生翻译读取钩子复用 p0 导致的 VerifyError。原方法单独执行，入口使用自身对象读取返回状态，保留原有跳转。新旧两套实现均已重建，保留原有版本兼容、原生译文命名和换行转空格。两套 Android 构建、寄存器复用回归测试、文件名测试及统一包检查通过。'
       - name: Commit verified source metadata
         run: |
           git config user.name 'github-actions[bot]'

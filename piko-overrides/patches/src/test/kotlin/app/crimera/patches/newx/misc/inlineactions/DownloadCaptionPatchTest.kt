@@ -29,16 +29,18 @@ import kotlin.test.fail
 /** Regression for Android 11 VerifyError after R8 reuses the translation presenter's p0. */
 class DownloadCaptionPatchTest {
     @Test
-    fun `all returns use the saved receiver after object and primitive parameter reuse`() {
+    fun `all body returns preserve the entry receiver after object and primitive parameter reuse`() {
         for (registerCount in listOf(16, 48)) {
             val original = presenter(registerCount)
             val patched = original.withDownloadCaptionHooks(
                 fieldReference("Lfixture/Presenter;->post:Ljava/lang/Object;"),
                 fieldReference("Lfixture/Event;->INSTANCE:Lfixture/Event;"),
             )
+            assertEquals(original.implementation!!.registerCount, patched.body.implementation!!.registerCount)
+            assertEquals(original.instructions.map { it.opcode }, patched.body.instructions.map { it.opcode })
             for (flag in listOf(0, 1)) {
                 assertEquals("state", execute(original, flag, expectRecord = false))
-                assertEquals("state", execute(patched, flag, expectRecord = true))
+                assertEquals("state", execute(patched.entry, flag, expectRecord = true, body = patched.body))
             }
         }
     }
@@ -70,7 +72,7 @@ class DownloadCaptionPatchTest {
 
     // Execute the emitted instructions through both real control-flow paths. An iget against the
     // reused p0 fails here just as the device verifier rejects it, rather than merely matching text.
-    private fun execute(method: MutableMethod, flag: Int, expectRecord: Boolean): Any? {
+    private fun execute(method: MutableMethod, flag: Int, expectRecord: Boolean, body: MutableMethod? = null): Any? {
         val implementation = assertNotNull(method.implementation)
         val registers = arrayOfNulls<Any>(implementation.registerCount)
         registers[method.p0Register] = "presenter"
@@ -79,10 +81,18 @@ class DownloadCaptionPatchTest {
         val instructions = method.instructions.toList()
         var index = 0
         var recorded = 0
+        var result: Any? = null
         repeat(100) {
             val instruction = instructions[index]
             fun a() = (instruction as OneRegisterInstruction).registerA
             fun b() = (instruction as TwoRegisterInstruction).registerB
+            fun arguments(): List<Int> = if (instruction is RegisterRangeInstruction) {
+                (instruction.startRegister until instruction.startRegister + instruction.registerCount).toList()
+            } else {
+                val invoke = instruction as FiveRegisterInstruction
+                listOf(invoke.registerC, invoke.registerD, invoke.registerE, invoke.registerF, invoke.registerG)
+                    .take(invoke.registerCount)
+            }
             when (instruction.opcode) {
                 Opcode.MOVE, Opcode.MOVE_FROM16, Opcode.MOVE_16,
                 Opcode.MOVE_OBJECT, Opcode.MOVE_OBJECT_FROM16, Opcode.MOVE_OBJECT_16 -> registers[a()] = registers[b()]
@@ -98,20 +108,21 @@ class DownloadCaptionPatchTest {
                     }
                 }
                 Opcode.IGET_OBJECT -> {
-                    assertEquals("presenter", registers[b()], "Post field read must use the saved presenter")
+                    assertEquals("presenter", registers[b()], "Post field read must use the entry presenter")
                     registers[a()] = "post"
                 }
+                Opcode.INVOKE_DIRECT, Opcode.INVOKE_DIRECT_RANGE -> {
+                    val target = (instruction as ReferenceInstruction).reference as MethodReference
+                    val called = assertNotNull(body)
+                    assertEquals(called.name, target.name)
+                    assertEquals(listOf("presenter", "composer", flag), arguments().map { registers[it] })
+                    result = execute(called, flag, expectRecord = false)
+                }
+                Opcode.MOVE_RESULT_OBJECT -> registers[a()] = result
                 Opcode.INVOKE_STATIC, Opcode.INVOKE_STATIC_RANGE -> {
                     val target = (instruction as ReferenceInstruction).reference as MethodReference
                     assertEquals("record", target.name)
-                    val arguments = if (instruction is RegisterRangeInstruction) {
-                        (instruction.startRegister until instruction.startRegister + instruction.registerCount).toList()
-                    } else {
-                        val invoke = instruction as FiveRegisterInstruction
-                        listOf(invoke.registerC, invoke.registerD, invoke.registerE, invoke.registerF, invoke.registerG)
-                            .take(invoke.registerCount)
-                    }
-                    assertEquals(listOf("post", "state", "event"), arguments.map { registers[it] })
+                    assertEquals(listOf("post", "state", "event"), arguments().map { registers[it] })
                     recorded++
                 }
                 Opcode.IF_EQZ -> if (registers[a()] == 0) {

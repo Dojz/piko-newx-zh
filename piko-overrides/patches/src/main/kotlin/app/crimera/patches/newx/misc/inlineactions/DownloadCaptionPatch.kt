@@ -26,7 +26,9 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
-import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethod
+import com.android.tools.smali.dexlib2.immutable.ImmutableMethodImplementation
+import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstruction11x
 
 private const val EXTENSION = "Lapp/morphe/extension/newx/misc/DownloadCaption;"
 private const val OBJECT = "Ljava/lang/Object;"
@@ -67,43 +69,42 @@ private fun helper(name: String, locals: Int): MutableMethod {
     }
 }
 
-/** Keep the receiver outside the original frame: R8 can overwrite p0 before any return. */
+internal data class DownloadCaptionPresenterMethods(val entry: MutableMethod, val body: MutableMethod)
+
+/** Run the untouched presenter in its own frame, then read its result with a stable receiver. */
 internal fun MutableMethod.withDownloadCaptionHooks(
     postField: FieldReference,
     eventField: FieldReference,
-): MutableMethod {
-    val savedReceiver = implementation?.registerCount
-        ?: throw PatchException("NewX translation presenter has no implementation")
-    // cloneMutable copies incoming parameters back to their old registers. Reserve beyond the
-    // entire old frame, including its parameter slots, so no original instruction can overwrite it.
-    val method = cloneMutable(additionalRegisters = numberOfParameterRegisters + 1)
-    val returns = method.instructions.mapIndexedNotNull { index, instruction ->
-        index.takeIf { instruction.opcode == Opcode.RETURN_OBJECT }
+): DownloadCaptionPresenterMethods {
+    if (implementation == null) throw PatchException("NewX translation presenter has no implementation")
+    val body = cloneMutable(
+        name = name + "\$pikoCaption",
+        accessFlags = (accessFlags and (AccessFlags.PUBLIC.value or AccessFlags.PROTECTED.value).inv()) or
+            AccessFlags.PRIVATE.value,
+    )
+    // A private body keeps all original registers, instructions, try ranges and branch targets.
+    // The public entry has three locals plus its own incoming parameters; body register reuse
+    // cannot affect this frame. No hooks or branch-label relocation are needed inside the body.
+    val entry = MutableMethod(ImmutableMethod(
+        definingClass, name, parameters, returnType, accessFlags, annotations, hiddenApiRestrictions,
+        ImmutableMethodImplementation(numberOfParameterRegisters + 3,
+            listOf(ImmutableInstruction11x(Opcode.RETURN_OBJECT, 1)), emptyList(), emptyList()),
+    ))
+    val arguments = mutableListOf(entry.p0Register)
+    var parameter = entry.p0Register + 1
+    parameterTypes.forEach { type ->
+        arguments.add(parameter)
+        parameter += if (type.toString() in listOf("J", "D")) 2 else 1
     }
-    if (returns.isEmpty()) throw PatchException("NewX translation presenter has no object return")
-    returns.asReversed().forEach { index ->
-        val stateRegister = (method.instructions[index] as OneRegisterInstruction).registerA
-        method.insertHook(
-            index,
-            excludedRegisters = listOf(stateRegister, savedReceiver),
-            relocateBranchTargets = true,
-        ) {
-            val post = scratchRegister()
-            val state = scratchRegister()
-            val request = scratchRegister()
-            move(state, stateRegister, OBJECT)
-            move(post, savedReceiver, OBJECT)
-            iget(post, post, postField)
-            sget(request, eventField)
-            invokeStatic(methodReference("$EXTENSION->record($OBJECT$OBJECT$OBJECT)V"), post, state, request)
-        }
+    entry.insertHook(0, relocateBranchTargets = false) {
+        invokeDirect(body, *arguments.toIntArray())
+        moveResult(1, returnType)
+        move(0, entry.p0Register, OBJECT)
+        iget(0, 0, postField)
+        sget(2, eventField)
+        invokeStatic(methodReference("$EXTENSION->record($OBJECT$OBJECT$OBJECT)V"), 0, 1, 2)
     }
-    // Insert last to keep return indexes stable. Internal jumps to the old entry must not recapture
-    // a receiver from parameter registers that the original method has already reused.
-    method.insertHook(0, relocateBranchTargets = false) {
-        move(savedReceiver, method.p0Register, OBJECT)
-    }
-    return method
+    return DownloadCaptionPresenterMethods(entry, body)
 }
 
 internal val newXDownloadCaptionPatch = bytecodePatch {
@@ -297,8 +298,13 @@ internal val newXDownloadCaptionPatch = bytecodePatch {
                     !AccessFlags.STATIC.isSet(it.accessFlags) && it.type in postTypes
                 })
                 val hooked = method.withDownloadCaptionHooks(postField, eventField)
+                if (owner.methods.any { it.name == hooked.body.name &&
+                        it.parameterTypes == hooked.body.parameterTypes && it.returnType == hooked.body.returnType }) {
+                    throw PatchException("NewX translation presenter body name already exists: ${hooked.body}")
+                }
                 owner.methods.remove(method)
-                owner.methods.add(hooked)
+                owner.methods.add(hooked.body)
+                owner.methods.add(hooked.entry)
             }
         }
     }
