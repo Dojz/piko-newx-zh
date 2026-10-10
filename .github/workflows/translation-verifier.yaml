@@ -2,7 +2,10 @@ name: Publish translation verifier fix
 on:
   push:
     branches: [codex/translation-verifier-fix]
-    paths: [.github/workflows/translation-verifier.yaml]
+    paths:
+      - .github/workflows/translation-verifier.yaml
+      - build_piko.py
+      - piko-overrides/**
   workflow_dispatch:
 permissions:
   contents: write
