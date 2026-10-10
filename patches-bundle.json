@@ -1,8 +1,8 @@
 {
-  "version": "v3.54.3",
-  "download_url": "https://github.com/Dojz/piko-newx-zh/releases/download/v3.54.3/patches.mpp",
-  "created_at": "2026-10-10T14:37:38",
-  "description": "Piko 简体中文统一补丁：修复正常浏览时原生翻译状态读取引起的 VerifyError，保留文件名空格和旧版本兼容。",
+  "version": "v3.54.2",
+  "download_url": "https://github.com/Dojz/piko-newx-zh/releases/download/v3.54.2/patches.mpp",
+  "created_at": "2026-10-10T15:49:48",
+  "description": "Piko 简体中文统一补丁：版本跟随上游，保留闪退修复、旧版本兼容和上游默认下载命名。",
   "app_version": "12.30.0-prod.01",
   "piko_commit": "9abde9777d92af50fe1a53634262498fb630d7d3",
   "upstream_version": "v3.54.2",

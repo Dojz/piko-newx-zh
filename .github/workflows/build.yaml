@@ -105,7 +105,7 @@ jobs:
           uv run main.py \
             --m 1 \
             --v "${{ steps.upstream.outputs.app_version }}" \
-            --release-tag "${{ steps.upstream.outputs.version }}-zh.${GITHUB_RUN_NUMBER}" \
+            --release-tag "${{ steps.upstream.outputs.version }}" \
             --semantic-bump true
 
       - name: Commit localized release metadata
