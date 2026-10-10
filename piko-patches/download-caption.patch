@@ -1,71 +1,5 @@
-diff --git a/extensions/newx/src/main/java/app/morphe/extension/newx/misc/DownloadCaption.java b/extensions/newx/src/main/java/app/morphe/extension/newx/misc/DownloadCaption.java
-new file mode 100644
-index 0000000..6c09516
---- /dev/null
-+++ b/extensions/newx/src/main/java/app/morphe/extension/newx/misc/DownloadCaption.java
-@@ -0,0 +1,60 @@
-+package app.morphe.extension.newx.misc;
-+
-+import android.content.res.Resources;
-+
-+import org.json.JSONObject;
-+
-+import java.io.BufferedReader;
-+import java.io.InputStreamReader;
-+import java.net.HttpURLConnection;
-+import java.net.URL;
-+import java.net.URLEncoder;
-+import java.nio.charset.StandardCharsets;
-+import java.util.Locale;
-+
-+import app.morphe.extension.newx.settings.NewXLogger;
-+
-+final class DownloadCaption {
-+    private DownloadCaption() {
-+    }
-+
-+    static String translate(String text) {
-+        if (text == null || text.trim().isEmpty()) return text;
-+        HttpURLConnection connection = null;
-+        try {
-+            Locale locale = Resources.getSystem().getConfiguration().getLocales().get(0);
-+            String language = locale.getLanguage();
-+            if (language.equals("zh")) {
-+                language = locale.getScript().equals("Hant") || locale.getCountry().equals("TW")
-+                        || locale.getCountry().equals("HK") || locale.getCountry().equals("MO")
-+                        ? "zh-TW" : "zh-CN";
-+            }
-+            String query = URLEncoder.encode(DownloadFileName.truncate(text, 1200), "UTF-8");
-+            URL url = new URL("https://ftapi.pythonanywhere.com/translate?dl="
-+                    + URLEncoder.encode(language, "UTF-8") + "&text=" + query);
-+            connection = (HttpURLConnection) url.openConnection();
-+            connection.setConnectTimeout(5000);
-+            connection.setReadTimeout(5000);
-+            connection.setRequestProperty("Accept", "application/json");
-+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-+                    connection.getInputStream(), StandardCharsets.UTF_8))) {
-+                StringBuilder response = new StringBuilder();
-+                char[] buffer = new char[2048];
-+                int count;
-+                while ((count = reader.read(buffer)) != -1) {
-+                    if (response.length() + count > 65536) {
-+                        throw new IllegalStateException("Translation response is too large");
-+                    }
-+                    response.append(buffer, 0, count);
-+                }
-+                String translated = new JSONObject(response.toString()).optString("destination-text");
-+                return translated.trim().isEmpty() ? text : translated;
-+            }
-+        } catch (Exception exception) {
-+            NewXLogger.printException(() -> "Could not translate download caption", exception);
-+            return text;
-+        } finally {
-+            if (connection != null) connection.disconnect();
-+        }
-+    }
-+}
 diff --git a/extensions/newx/src/main/java/app/morphe/extension/newx/misc/DownloadFileName.java b/extensions/newx/src/main/java/app/morphe/extension/newx/misc/DownloadFileName.java
-index 7dc8b0e..02255d1 100644
+index 7dc8b0e9..194ea942 100644
 --- a/extensions/newx/src/main/java/app/morphe/extension/newx/misc/DownloadFileName.java
 +++ b/extensions/newx/src/main/java/app/morphe/extension/newx/misc/DownloadFileName.java
 @@ -2,6 +2,7 @@ package app.morphe.extension.newx.misc;
@@ -103,17 +37,29 @@ index 7dc8b0e..02255d1 100644
      };
  
      private static final String UNKNOWN_TOKEN_MESSAGE = "piko_newx_download_filename_error_unknown";
-@@ -63,6 +70,9 @@ public final class DownloadFileName {
+@@ -63,6 +70,10 @@ public final class DownloadFileName {
  
      /** Post-level template values, resolved once per download action. */
      public static final class PostContext {
 +        String text;
 +        String translatedText;
 +        private boolean translationResolved;
++        private Object post;
          final String id;
          final String screenName;
          final String name;
-@@ -99,7 +109,7 @@ public final class DownloadFileName {
+@@ -90,7 +101,9 @@ public final class DownloadFileName {
+         }
+ 
+         public static PostContext from(Object post) {
+-            return fromText(post == null ? null : post.toString());
++            PostContext context = fromText(post == null ? null : post.toString());
++            context.post = post;
++            return context;
+         }
+ 
+         /**
+@@ -99,7 +112,7 @@ public final class DownloadFileName {
           * toString once per token.
           */
          public static PostContext fromText(String postText) {
@@ -122,7 +68,7 @@ index 7dc8b0e..02255d1 100644
                      NewXUtils.rawSourcePostId(postText),
                      NewXUtils.rawSourceScreenName(postText),
                      NewXUtils.rawSourceDisplayName(postText),
-@@ -108,6 +118,8 @@ public final class DownloadFileName {
+@@ -108,6 +121,8 @@ public final class DownloadFileName {
                      NewXUtils.rawSourceMediaField(postText, "sourceUserIdentifier"),
                      NewXUtils.rawSourceMediaField(postText, "sourceUserDisplayName")
              );
@@ -131,16 +77,21 @@ index 7dc8b0e..02255d1 100644
          }
  
          /**
-@@ -126,9 +138,21 @@ public final class DownloadFileName {
+@@ -126,9 +141,26 @@ public final class DownloadFileName {
              );
          }
  
 +        synchronized void resolveTranslation(String template) {
 +            if (!translationResolved && template != null
 +                    && template.contains("{" + TOKEN_TRANSLATED_TEXT + "}")) {
-+                translatedText = DownloadCaption.translate(text);
++                translatedText = DownloadCaption.translate(post, text);
 +                translationResolved = true;
 +            }
++        }
++
++        synchronized void clearTranslation() {
++            translatedText = null;
++            translationResolved = false;
 +        }
 +
          @Nullable
@@ -153,7 +104,7 @@ index 7dc8b0e..02255d1 100644
                  case TOKEN_ID:
                      return id;
                  case TOKEN_USER_NAME:
-@@ -151,7 +175,9 @@ public final class DownloadFileName {
+@@ -151,7 +183,9 @@ public final class DownloadFileName {
          }
  
          static boolean isKnownToken(String token) {
@@ -164,7 +115,7 @@ index 7dc8b0e..02255d1 100644
                      || token.equals(TOKEN_USER_NAME)
                      || token.equals(TOKEN_SCREEN_NAME_LEGACY)
                      || token.equals(TOKEN_NAME)
-@@ -204,14 +230,17 @@ public final class DownloadFileName {
+@@ -204,14 +238,17 @@ public final class DownloadFileName {
          }
          // An explicit {ext} lets the template place the extension itself, which also means it must
          // not be appended a second time.
@@ -185,7 +136,7 @@ index 7dc8b0e..02255d1 100644
      }
  
      /** Template validation outcomes. */
-@@ -361,7 +390,7 @@ public final class DownloadFileName {
+@@ -361,7 +398,7 @@ public final class DownloadFileName {
          if (value == null) return fallback;
  
          String sanitized = value.trim().replaceFirst("^@", "")
@@ -194,7 +145,7 @@ index 7dc8b0e..02255d1 100644
                  // Separators are already gone, so a dot run cannot traverse; collapsing every
                  // punctuation run keeps the "no parent-directory component" property local too.
                  .replaceAll("[_.]{2,}", "_")
-@@ -370,6 +400,43 @@ public final class DownloadFileName {
+@@ -370,6 +407,43 @@ public final class DownloadFileName {
          return sanitized.isEmpty() ? fallback : sanitized;
      }
  
@@ -239,18 +190,55 @@ index 7dc8b0e..02255d1 100644
          return app.morphe.extension.shared.StringRef.str(name);
      }
 diff --git a/extensions/newx/src/main/java/app/morphe/extension/newx/misc/InlineDownloadButton.java b/extensions/newx/src/main/java/app/morphe/extension/newx/misc/InlineDownloadButton.java
-index 97f0598..76b1943 100644
+index 97f05988..d6ad05e2 100644
 --- a/extensions/newx/src/main/java/app/morphe/extension/newx/misc/InlineDownloadButton.java
 +++ b/extensions/newx/src/main/java/app/morphe/extension/newx/misc/InlineDownloadButton.java
-@@ -1198,6 +1198,7 @@ public final class InlineDownloadButton {
+@@ -312,7 +312,7 @@ public final class InlineDownloadButton {
+         try {
+             String postText = post.toString();
+             downloads = downloadItems(mediaFor(post));
+-            postContext = DownloadFileName.PostContext.fromText(postText);
++            postContext = DownloadFileName.PostContext.from(post);
+             username = NewXUtils.sourceUsername(postText);
+         } catch (RuntimeException exception) {
+             NewXLogger.printException(() -> "Failed to process inline download action", exception);
+@@ -1198,14 +1198,27 @@ public final class InlineDownloadButton {
          }
  
          String template = DownloadSettings.filenameTemplate();
-+        postContext.resolveTranslation(template);
-         String fileName = DownloadFileName.render(
-                 template,
-                 postContext,
-@@ -1223,7 +1224,7 @@ public final class InlineDownloadButton {
+-        String fileName = DownloadFileName.render(
+-                template,
+-                postContext,
+-                index,
+-                mediaCount,
+-                download.extension,
+-                download.resolution
+-        );
++        try {
++            postContext.resolveTranslation(template);
++        } catch (RuntimeException exception) {
++            NewXLogger.printException(() -> "Could not translate download caption", exception);
++            NewXUtils.runOnUiThread(() -> NewXInAppNotification.show(
++                    StringRef.str("piko_newx_download_translation_failed")));
++            return EnqueueState.FAILED;
++        }
++        String fileName;
++        try {
++            fileName = DownloadFileName.render(
++                    template,
++                    postContext,
++                    index,
++                    mediaCount,
++                    download.extension,
++                    download.resolution
++            );
++        } finally {
++            postContext.clearTranslation();
++        }
+         // Only a chooser pick gets the automatic suffix; auto-selected preferences keep the plain
+         // filename. An explicit {resolution} token already places it, so do not append twice.
+         boolean templateUsesResolution = template != null
+@@ -1223,7 +1236,7 @@ public final class InlineDownloadButton {
          String larger = NewXDownloader.largerVariantUrl(download.url);
          List<String> fallbacks = larger != null ? Collections.singletonList(larger) : Collections.emptyList();
  
@@ -259,7 +247,7 @@ index 97f0598..76b1943 100644
          final DownloadRequest request;
          try {
              request = new DownloadRequest(
-@@ -1233,7 +1234,7 @@ public final class InlineDownloadButton {
+@@ -1233,7 +1246,7 @@ public final class InlineDownloadButton {
                      Collections.emptyList(),
                      resolvedFileName,
                      download.mimeType,
@@ -269,10 +257,19 @@ index 97f0598..76b1943 100644
              );
          } catch (IllegalArgumentException exception) {
 diff --git a/extensions/newx/src/main/java/app/morphe/extension/newx/misc/NativeDownloadRouter.java b/extensions/newx/src/main/java/app/morphe/extension/newx/misc/NativeDownloadRouter.java
-index fce1b62..9fafc66 100644
+index fce1b62d..142e1075 100644
 --- a/extensions/newx/src/main/java/app/morphe/extension/newx/misc/NativeDownloadRouter.java
 +++ b/extensions/newx/src/main/java/app/morphe/extension/newx/misc/NativeDownloadRouter.java
-@@ -96,18 +96,16 @@ public final class NativeDownloadRouter {
+@@ -83,7 +83,7 @@ public final class NativeDownloadRouter {
+         String postText = post == null ? null : post.toString();
+         String username = NewXUtils.sourceUsername(postText);
+         String template = DownloadSettings.filenameTemplate();
+-        DownloadFileName.PostContext postContext = DownloadFileName.PostContext.fromText(postText);
++        DownloadFileName.PostContext postContext = DownloadFileName.PostContext.from(post);
+         int index = 0;
+         int mediaCount = 1;
+         try {
+@@ -96,18 +96,28 @@ public final class NativeDownloadRouter {
              NewXLogger.printException(
                      () -> "Failed to resolve the NewX native download media position", exception);
          }
@@ -291,15 +288,27 @@ index fce1b62..9fafc66 100644
 +        final int mediaIndex = index;
 +        final int count = mediaCount;
 +        ENQUEUE_EXECUTOR.execute(() -> {
-+            postContext.resolveTranslation(template);
-+            String fileName = DownloadFileName.render(
-+                    template, postContext, mediaIndex, count, extensionFor(mimeType, url));
++            try {
++                postContext.resolveTranslation(template);
++            } catch (RuntimeException exception) {
++                NewXLogger.printException(() -> "Could not translate download caption", exception);
++                postStatus(app.morphe.extension.shared.StringRef.str(
++                        "piko_newx_download_translation_failed"), username);
++                return;
++            }
++            String fileName;
++            try {
++                fileName = DownloadFileName.render(
++                        template, postContext, mediaIndex, count, extensionFor(mimeType, url));
++            } finally {
++                postContext.clearTranslation();
++            }
 +            enqueue(safeContext, kind, fileName, url, mimeType, username, template);
 +        });
          return true;
      }
  
-@@ -117,7 +115,8 @@ public final class NativeDownloadRouter {
+@@ -117,7 +127,8 @@ public final class NativeDownloadRouter {
              String fileName,
              String url,
              String mimeType,
@@ -309,7 +318,7 @@ index fce1b62..9fafc66 100644
      ) {
          DownloadEngine engine = NewXDownloader.get();
          if (engine == null) {
-@@ -147,7 +146,7 @@ public final class NativeDownloadRouter {
+@@ -147,7 +158,7 @@ public final class NativeDownloadRouter {
                      Collections.emptyList(),
                      fileName,
                      mimeType,
@@ -319,7 +328,7 @@ index fce1b62..9fafc66 100644
              );
          } catch (IllegalArgumentException exception) {
 diff --git a/patches/src/main/resources/addresources/values/newx/strings.xml b/patches/src/main/resources/addresources/values/newx/strings.xml
-index 60bb7e8..21e38c8 100644
+index 60bb7e82..7573f19a 100644
 --- a/patches/src/main/resources/addresources/values/newx/strings.xml
 +++ b/patches/src/main/resources/addresources/values/newx/strings.xml
 @@ -229,7 +229,7 @@
@@ -331,3 +340,9 @@ index 60bb7e8..21e38c8 100644
      <string name="piko_newx_download_filename_error_unknown">Unknown token {%1$s}</string>
  
      <string name="piko_newx_download_first_run_title">Choose a download folder</string>
+@@ -496,4 +496,5 @@
+     <string name="piko_newx_settings_search_clear">Clear search</string>
+     <string name="piko_newx_settings_search_no_results">No results for \"%s\"</string>
+ 
++    <string name="piko_newx_download_translation_failed">Could not translate post. Try translating it in X, then download again.</string>
+ </resources>

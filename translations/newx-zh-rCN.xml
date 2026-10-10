@@ -480,4 +480,5 @@
     <string name="morphe_settings_import_reset">NewX 设置已恢复默认</string>
     <string name="morphe_settings_import_success">已恢复 %1$d 项 NewX 设置</string>
     <string name="morphe_settings_import_failure_parse">无法恢复 NewX 设置：%1$s</string>
+    <string name="piko_newx_download_translation_failed">帖子翻译失败，请在 X 中翻译后重试下载。</string>
 </resources>
