@@ -54,7 +54,7 @@ jobs:
           metadata = {
               "version": version,
               "download_url": "https://github.com/" + os.environ["GITHUB_REPOSITORY"] + "/releases/download/" + version + "/patches.mpp",
-              "created_at": datetime.now(timezone.utc).isoformat(),
+              "created_at": datetime.now(timezone.utc).replace(tzinfo=None).isoformat(),
               "description": "Piko caption template test",
               "app_version": "12.30.0-prod.01",
               "piko_commit": "f116ed9349db4f486bfb216071d18207901d5107"
