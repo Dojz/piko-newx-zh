@@ -1,8 +1,8 @@
 {
-  "version": "v3.54.1",
-  "download_url": "https://github.com/Dojz/piko-newx-zh/releases/download/v3.54.1/patches.mpp",
-  "created_at": "2026-10-10T09:00:06",
-  "description": "Piko NewX + Instagram 简体中文统一补丁，含 X 原生译文命名；保留 12.28–12.30 兼容目标。",
+  "version": "v3.54.2",
+  "download_url": "https://github.com/Dojz/piko-newx-zh/releases/download/v3.54.2/patches.mpp",
+  "created_at": "2026-10-10T12:03:19",
+  "description": "Piko 简体中文统一补丁：原文/原生译文命名，换行和制表符转空格，保留旧版本兼容。",
   "app_version": "12.30.0-prod.01",
   "piko_commit": "f116ed9349db4f486bfb216071d18207901d5107",
   "upstream_version": "v3.54.0",
