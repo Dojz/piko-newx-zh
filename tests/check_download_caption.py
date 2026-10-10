@@ -17,7 +17,7 @@ with tempfile.TemporaryDirectory(prefix="native-caption-") as temporary:
     source = SOURCE.read_text().replace("TIMEOUT_MS = 20000", "TIMEOUT_MS = 300")
     bridges = {
         "sourceLanguage": "return ((CaptionCheck.Post) post).language;",
-        "postId": "return ((CaptionCheck.Post) post).id;",
+        "postId": "return post instanceof CaptionCheck.Post ? ((CaptionCheck.Post) post).id : null;",
         "cachedText": "return ((CaptionCheck.Post) post).cached;",
         "stateText": "if (state == null) return null; CaptionCheck.reads++; return ((CaptionCheck.State) state).text;",
         "eventSink": "return ((CaptionCheck.State) state).sink;",
@@ -50,6 +50,7 @@ public class CaptionCheck {
   check(DownloadCaption.translate(new Post("cached","en","译文"),"original").equals("译文"));
   fail(()->DownloadCaption.translate(new Post("missing","en",null),"original"));
   Post unrelated=new Post("unrelated","en",null);State unused=new State("unrelated text",()->{});
+  DownloadCaption.record(new Object(),unused,new Object());check(reads==0);
   DownloadCaption.record(unrelated,unused,new Object());check(reads==0);
   Post post=new Post("selected","en",null);AtomicInteger calls=new AtomicInteger();
   State initial=new State(null,null);List<State> keep=new ArrayList<>();keep.add(initial);

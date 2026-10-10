@@ -36,6 +36,8 @@ public final class DownloadCaption {
 
     public static void record(Object post, Object state, Object event) {
         if (post == null || state == null) return;
+        String id = postId(post);
+        if (id == null || id.isEmpty()) return;
         Object sink = eventSink(state);
         if (sink == null) return;
         synchronized (SESSIONS) {

@@ -70,6 +70,8 @@ internal val newXDownloadCaptionPatch = bytecodePatch {
     dependsOn(newXExtensionPatch, newXPostModelResolutionPatch)
     execute {
         val models = resolvedNewXPostModels()
+        val postTypes = mutableClassDefBy(models.contextualPostDescriptor).interfaces.toSet() +
+            models.contextualPostDescriptor
         val canonical = anchor("Lcom/x/models/", "CanonicalPost(id=", ", grokAutoTranslation=")
         val canonicalInstructions = canonical.originalMethod.implementation!!.instructions.toList()
         val languageLabel = requireExactlyOne("NewX post language label", canonicalInstructions.indices.filter {
@@ -245,14 +247,14 @@ internal val newXDownloadCaptionPatch = bytecodePatch {
                     method.returnType == stateType &&
                     method.parameterTypes.any { it.toString() == "Landroidx/compose/runtime/Composer;" } &&
                     owner.fields.any { !AccessFlags.STATIC.isSet(it.accessFlags) &&
-                        it.type == models.contextualPostDescriptor }
+                        it.type in postTypes }
                 }).scopedMatchAll()
             if (presenters.isEmpty()) throw PatchException("NewX $scope translation presenters missing")
             presenters.forEach { match ->
                 val method = match.method
                 val owner = mutableClassDefBy(method.definingClass)
                 val postField = requireExactlyOne("NewX translation presenter post in ${owner.type}", owner.fields.filter {
-                    !AccessFlags.STATIC.isSet(it.accessFlags) && it.type == models.contextualPostDescriptor
+                    !AccessFlags.STATIC.isSet(it.accessFlags) && it.type in postTypes
                 })
                 method.instructions.mapIndexedNotNull { index, instruction ->
                     index.takeIf { instruction.opcode == Opcode.RETURN_OBJECT }
