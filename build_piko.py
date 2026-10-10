@@ -376,6 +376,9 @@ def build_piko_patches(
         apply_download_caption_patch(piko_directory)
         apply_native_download_translation(piko_directory)
 
+        if os.environ.get("PIKO_VALIDATE"):
+            subprocess.run(["python", str(REPO_ROOT / "tests/check_download_filename.py"), str(piko_directory)], check=True)
+
         if patch_version is not None:
             set_project_version(piko_directory, patch_version)
 

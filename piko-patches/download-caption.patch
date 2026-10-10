@@ -139,7 +139,8 @@ index 7dc8b0e9..194ea942 100644
 @@ -361,7 +398,7 @@ public final class DownloadFileName {
          if (value == null) return fallback;
  
-         String sanitized = value.trim().replaceFirst("^@", "")
+-        String sanitized = value.trim().replaceFirst("^@", "")
++        String sanitized = value.replaceAll("(?:\\R|\\t)+", " ").trim().replaceFirst("^@", "")
 -                .replaceAll("[^A-Za-z0-9._-]+", "_")
 +                .replaceAll("[\\p{Cntrl}\\p{Cf}<>:\"/\\\\|?*]+", "_")
                  // Separators are already gone, so a dot run cannot traverse; collapsing every
