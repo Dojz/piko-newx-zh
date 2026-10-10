@@ -1,0 +1,93 @@
+name: Publish translation verifier fix
+on:
+  push:
+    branches: [codex/translation-verifier-fix]
+    paths: [.github/workflows/translation-verifier.yaml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  packages: read
+concurrency:
+  group: piko-newx-zh-release
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+      - run: python tests/check_download_caption.py
+      - name: Build and verify both implementations
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PIKO_VALIDATE: "1"
+        run: |
+          python - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+          from build_piko import build_piko_patches
+          from build_compatible import assemble_compatible_bundle, digest, fetch
+          tag = 'v3.54.3'
+          version = tag[1:]
+          entries = json.loads(Path('compatibility-bundles.json').read_text())
+          Path('bins').mkdir(exist_ok=True)
+          rebuilt = []
+          for commit, name in (
+              ('a3939be95cd27dd9cf72e25afea32285bd7e80ac', 'patches-legacy.mpp'),
+              ('9abde9777d92af50fe1a53634262498fb630d7d3', 'patches-current.mpp'),
+          ):
+              os.environ['PIKO_COMMIT'] = commit
+              artifact = Path('bins') / name
+              build = build_piko_patches(str(artifact), patch_version=version)
+              assert build.commit == commit
+              rebuilt.append({'version': tag, 'download_url': artifact.resolve().as_uri(),
+                              'sha256': digest(artifact), 'piko_commit': build.commit})
+          Path('compatibility-bundles.json').write_text(json.dumps(entries + rebuilt))
+          fetch('https://github.com/MorpheApp/morphe-desktop/releases/download/v1.18.1/morphe-desktop-1.18.1-all.jar',
+                Path('bins/morphe-cli.jar'), '1b506ab5f03d16a2f65026d5e0e1910d01fc1e2152f21eaeb44ed2f30856597b')
+          versions = assemble_compatible_bundle(Path('bins/patches-current.mpp'), Path('bins/patches.mpp'),
+                                                version, Path('bins/morphe-cli.jar'))
+          required = {'12.28.0-alpha.01', '12.28.0-alpha.04', '12.28.0-prod.01', '12.29.0-alpha.04',
+                      '12.29.1-prod.01', '12.30.0-alpha.05', '12.30.0-prod.01'}
+          assert required <= versions
+          for entry, name in zip(rebuilt, ('patches-legacy.mpp', 'patches-current.mpp')):
+              entry['download_url'] = f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/releases/download/{tag}/{name}'
+          Path('compatibility-bundles.json').write_text(json.dumps(entries + rebuilt, indent=2) + '\n')
+          metadata = json.loads(Path('patches-bundle.json').read_text())
+          metadata.update(version=tag,
+              download_url=f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/releases/download/{tag}/patches.mpp',
+              created_at=datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S'),
+              description='Piko 简体中文统一补丁：修复正常浏览时原生翻译状态读取引起的 VerifyError，保留文件名空格和旧版本兼容。',
+              piko_commit=rebuilt[-1]['piko_commit'], upstream_version='v3.54.2',
+              supported_versions=sorted(versions))
+          metadata.pop('signature_download_url', None)
+          Path('patches-bundle.json').write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + '\n')
+          Path('bins/supported-versions.json').write_text(json.dumps(sorted(versions), indent=2) + '\n')
+          readme = Path('README.md')
+          readme.write_text(readme.read_text().replace('**Piko 3.54.2**', '**Piko 3.54.3**'))
+          for name in ('patches.mpp', 'patches-current.mpp', 'patches-legacy.mpp'):
+              path = Path('bins') / name
+              print(f'{name}: {path.stat().st_size} bytes, sha256={digest(path)}')
+          PY
+      - name: Publish unified MPP
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create v3.54.3 bins/patches.mpp bins/patches-current.mpp bins/patches-legacy.mpp \
+            bins/supported-versions.json compatibility-bundles.json \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'Piko 3.54.3' \
+            --notes '修复正常浏览贴文时原生翻译读取钩子复用 p0 导致的 VerifyError。入口保存对象，返回时读取保存的对象。新旧两套实现均已重建，保留原有版本兼容、原生译文命名和换行转空格。两套 Android 构建、寄存器复用回归测试、文件名测试及统一包检查通过。'
+      - name: Commit verified source metadata
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add patches-bundle.json compatibility-bundles.json README.md
+          git commit -m 'Point source to verified Piko 3.54.3 verifier fix [skip ci]'
+          git push origin HEAD:codex/translation-verifier-fix

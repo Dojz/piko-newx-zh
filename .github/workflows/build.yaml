@@ -97,6 +97,7 @@ jobs:
         if: steps.decision.outputs.build == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PIKO_VALIDATE: "1"
           GRADLE_OPTS: -Dorg.gradle.caching=true
           PIKO_COMMIT: ${{ steps.upstream.outputs.piko_commit }}
         run: |

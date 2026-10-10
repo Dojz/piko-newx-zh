@@ -21,6 +21,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.util.getReference
 import app.morphe.util.cloneMutable
 import app.morphe.util.p0Register
+import app.morphe.util.numberOfParameterRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
@@ -64,6 +65,45 @@ private fun helper(name: String, locals: Int): MutableMethod {
         owner.methods.remove(original)
         owner.methods.add(it)
     }
+}
+
+/** Keep the receiver outside the original frame: R8 can overwrite p0 before any return. */
+internal fun MutableMethod.withDownloadCaptionHooks(
+    postField: FieldReference,
+    eventField: FieldReference,
+): MutableMethod {
+    val savedReceiver = implementation?.registerCount
+        ?: throw PatchException("NewX translation presenter has no implementation")
+    // cloneMutable copies incoming parameters back to their old registers. Reserve beyond the
+    // entire old frame, including its parameter slots, so no original instruction can overwrite it.
+    val method = cloneMutable(additionalRegisters = numberOfParameterRegisters + 1)
+    val returns = method.instructions.mapIndexedNotNull { index, instruction ->
+        index.takeIf { instruction.opcode == Opcode.RETURN_OBJECT }
+    }
+    if (returns.isEmpty()) throw PatchException("NewX translation presenter has no object return")
+    returns.asReversed().forEach { index ->
+        val stateRegister = (method.instructions[index] as OneRegisterInstruction).registerA
+        method.insertHook(
+            index,
+            excludedRegisters = listOf(stateRegister, savedReceiver),
+            relocateBranchTargets = true,
+        ) {
+            val post = scratchRegister()
+            val state = scratchRegister()
+            val request = scratchRegister()
+            move(state, stateRegister, OBJECT)
+            move(post, savedReceiver, OBJECT)
+            iget(post, post, postField)
+            sget(request, eventField)
+            invokeStatic(methodReference("$EXTENSION->record($OBJECT$OBJECT$OBJECT)V"), post, state, request)
+        }
+    }
+    // Insert last to keep return indexes stable. Internal jumps to the old entry must not recapture
+    // a receiver from parameter registers that the original method has already reused.
+    method.insertHook(0, relocateBranchTargets = false) {
+        move(savedReceiver, method.p0Register, OBJECT)
+    }
+    return method
 }
 
 internal val newXDownloadCaptionPatch = bytecodePatch {
@@ -256,21 +296,9 @@ internal val newXDownloadCaptionPatch = bytecodePatch {
                 val postField = requireExactlyOne("NewX translation presenter post in ${owner.type}", owner.fields.filter {
                     !AccessFlags.STATIC.isSet(it.accessFlags) && it.type in postTypes
                 })
-                method.instructions.mapIndexedNotNull { index, instruction ->
-                    index.takeIf { instruction.opcode == Opcode.RETURN_OBJECT }
-                }.asReversed().forEach { index ->
-                    val stateRegister = (method.instructions.elementAt(index) as OneRegisterInstruction).registerA
-                    method.insertHook(index, excludedRegisters = listOf(stateRegister, method.p0Register), relocateBranchTargets = true) {
-                        val post = scratchRegister()
-                        val state = scratchRegister()
-                        val request = scratchRegister()
-                        move(state, stateRegister, OBJECT)
-                        move(post, method.p0Register, OBJECT)
-                        iget(post, post, postField)
-                        sget(request, eventField)
-                        invokeStatic(methodReference("$EXTENSION->record($OBJECT$OBJECT$OBJECT)V"), post, state, request)
-                    }
-                }
+                val hooked = method.withDownloadCaptionHooks(postField, eventField)
+                owner.methods.remove(method)
+                owner.methods.add(hooked)
             }
         }
     }
