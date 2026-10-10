@@ -67,6 +67,14 @@ def apply_source_overlays(piko_directory: Path) -> None:
         shutil.copy2(source, target)
 
 
+def apply_download_caption_patch(piko_directory: Path) -> None:
+    patch = REPO_ROOT / "piko-patches" / "download-caption.patch"
+    subprocess.run(
+        ["git", "apply", "--check", str(patch)], cwd=piko_directory, check=True
+    )
+    subprocess.run(["git", "apply", str(patch)], cwd=piko_directory, check=True)
+
+
 def install_instagram_screen_translate_button(piko_directory: Path) -> None:
     """Install zh-CN Instagram UI enhancements and their three opt-in switches."""
     path = piko_directory / INSTAGRAM_ACTIONBAR
@@ -335,6 +343,7 @@ def build_piko_patches(
         # intentionally not applied here. They are retained in-repo only for
         # development until their native Litho/translation hooks are ready.
         apply_zh_cn(piko_directory)
+        apply_download_caption_patch(piko_directory)
 
         if patch_version is not None:
             set_project_version(piko_directory, patch_version)

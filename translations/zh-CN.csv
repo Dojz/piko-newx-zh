@@ -209,7 +209,7 @@ piko_newx_download_filename_title,Filename template,文件名模板
 piko_newx_download_filename_tokens,Tokens,变量
 piko_newx_download_filename_error_empty,Enter a filename template,请输入文件名模板
 piko_newx_download_filename_error_unclosed,A brace was opened but never closed,有一个左花括号未闭合
-piko_newx_download_filename_error_static,Add {id} or {timestamp} so different posts do not overwrite each other,请加入 {id} 或 {timestamp}，避免不同帖子相互覆盖
+piko_newx_download_filename_error_static,"Add {id}, {timestamp}, {text} or {translatedText}",请加入 {id}、{timestamp}、{text} 或 {translatedText}
 piko_newx_download_filename_error_unknown,Unknown token {%1$s},未知变量 {%1$s}
 piko_newx_download_first_run_title,Choose a download folder,选择下载文件夹
 piko_newx_download_first_run_images,Downloaded images need a folder. Pick one so they are saved where you can find them.,下载图片需要指定文件夹。请选择一个方便查找的位置。

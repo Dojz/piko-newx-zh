@@ -209,7 +209,7 @@
     <string name="piko_newx_download_filename_tokens">变量</string>
     <string name="piko_newx_download_filename_error_empty">请输入文件名模板</string>
     <string name="piko_newx_download_filename_error_unclosed">有一个左花括号未闭合</string>
-    <string name="piko_newx_download_filename_error_static">请加入 {id} 或 {timestamp}，避免不同帖子相互覆盖</string>
+    <string name="piko_newx_download_filename_error_static">请加入 {id}、{timestamp}、{text} 或 {translatedText}</string>
     <string name="piko_newx_download_filename_error_unknown">未知变量 {%1$s}</string>
     <string name="piko_newx_download_first_run_title">选择下载文件夹</string>
     <string name="piko_newx_download_first_run_images">下载图片需要指定文件夹。请选择一个方便查找的位置。</string>
