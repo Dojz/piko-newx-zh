@@ -10,12 +10,31 @@ private const val ALIAS = "app.morphe.extension.newx.launcher."
 
 internal data class LauncherManifest(val descriptor: String, val theme: String, val added: Boolean)
 
-private fun Element.android(name: String): String =
-    getAttributeNS(ANDROID, name).ifEmpty { getAttribute("android:$name") }
+private fun Element.androidAttributeNames(name: String): List<String> {
+    fun declaredAndroidPrefix(prefix: String): Boolean {
+        var scope: org.w3c.dom.Node? = this
+        while (scope is Element) {
+            val declaration = scope.getAttribute("xmlns:$prefix")
+            if (declaration.isNotEmpty()) return declaration == ANDROID
+            scope = scope.parentNode
+        }
+        return false
+    }
+    return (0 until attributes.length).map { attributes.item(it) }.filter { attribute ->
+        (attribute.namespaceURI == ANDROID && attribute.localName == name) ||
+            (':' in attribute.nodeName && attribute.nodeName.substringAfter(':') == name &&
+                declaredAndroidPrefix(attribute.nodeName.substringBefore(':')))
+    }.map { it.nodeName }
+}
+
+private fun Element.android(name: String): String {
+    val names = androidAttributeNames(name)
+    if (names.isEmpty()) return ""
+    return getAttribute(requireExactlyOne("NewX Android $name attribute", names))
+}
 
 private fun Element.setAndroid(name: String, value: String) {
-    removeAttribute("android:$name")
-    removeAttributeNS(ANDROID, name)
+    androidAttributeNames(name).forEach { removeAttribute(it) }
     setAttributeNS(ANDROID, "android:$name", value)
 }
 
@@ -82,13 +101,14 @@ internal fun configureLauncherManifest(document: Document): LauncherManifest {
     // Android attributes may use another prefix in a namespace-aware DOM.
     document.documentElement.setAttribute("xmlns:android", ANDROID)
     val blue = native.cloneNode(true) as Element
+    // Attach before rewriting attributes so an unaware DOM can resolve inherited xmlns prefixes.
+    application.appendChild(blue)
     blue.setAndroid("name", BLUE_ACTIVITY)
     blue.setAndroid("theme", "@style/PikoBlueBirdSplash")
     blue.setAndroid("enabled", "true")
     blue.setAndroid("icon", "@mipmap/piko_launcher_blue_bird")
     blue.setAndroid("roundIcon", "@mipmap/piko_launcher_blue_bird")
     blue.elements("intent-filter").forEach { blue.removeChild(it) }
-    application.appendChild(blue)
 
     for ((suffix, enabled) in listOf("Default" to true, "BlueBird" to false)) {
         val alias = document.createElement("activity-alias")

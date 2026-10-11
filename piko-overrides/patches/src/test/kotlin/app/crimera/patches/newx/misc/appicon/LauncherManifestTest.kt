@@ -75,11 +75,16 @@ class LauncherManifestTest {
     @Test
     fun `namespace prefix changes resolve without an android lexical prefix`() {
         val xml = """<manifest xmlns:x="$namespace" package="com.twitter.android"><application><activity x:name="Native" x:theme="@style/Splash">${mainFilter.replace("android:", "x:")}</activity></application></manifest>"""
-        val factory = DocumentBuilderFactory.newInstance().apply { isNamespaceAware = true }
-        val doc = factory.newDocumentBuilder().parse(ByteArrayInputStream(xml.toByteArray()))
-        assertEquals("Lcom/twitter/android/Native;", configureLauncherManifest(doc).descriptor)
-        val roundTrip = factory.newDocumentBuilder().parse(ByteArrayInputStream(serialized(doc).toByteArray()))
-        assertFalse(configureLauncherManifest(roundTrip).added)
+        for (aware in listOf(false, true)) {
+            val factory = DocumentBuilderFactory.newInstance().apply { isNamespaceAware = aware }
+            val doc = factory.newDocumentBuilder().parse(ByteArrayInputStream(xml.toByteArray()))
+            assertEquals("Lcom/twitter/android/Native;", configureLauncherManifest(doc).descriptor)
+            val roundTrip = factory.newDocumentBuilder().parse(ByteArrayInputStream(serialized(doc).toByteArray()))
+            assertFalse(configureLauncherManifest(roundTrip).added)
+            // Both forms must also be valid to a namespace-aware Android XML reader.
+            DocumentBuilderFactory.newInstance().apply { isNamespaceAware = true }.newDocumentBuilder()
+                .parse(ByteArrayInputStream(serialized(doc).toByteArray()))
+        }
     }
 
     @Test
