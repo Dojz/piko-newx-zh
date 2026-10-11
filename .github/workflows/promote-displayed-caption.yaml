@@ -1,0 +1,58 @@
+name: Promote verified displayed caption and blue bird source
+on:
+  push:
+    branches: [codex/displayed-caption-icon]
+    paths: [.github/workflows/promote-displayed-caption.yaml]
+permissions:
+  contents: write
+concurrency:
+  group: piko-newx-zh-release
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify candidate provenance and download built bundles
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38107831285 --jq .conclusion)" = success
+          gh release view displayed-caption-check --repo "$GITHUB_REPOSITORY" --json body --jq .body | grep -F '99b1900b3cc7f2962b0e096108ca2c741d252702'
+          mkdir bins
+          gh release download displayed-caption-check --repo "$GITHUB_REPOSITORY" -D bins --pattern '*.mpp' --pattern '*.json'
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+          checksums = {'patches.mpp': '85611f72880f0b8fc8d07978815f5230e3236f918a816bf627fc5274d0f15fc7', 'patches-current.mpp': '4ac8c5636a6778baf2fee6d509bd617438344a0d14717d8b83caa8286d477e46', 'patches-legacy.mpp': 'b18fb6acde10dc92648aaf74ce22993f5c799bc210d8620824640abeeea161be', 'patches-bundle.json': 'fb191e3909f3825f4213ebe3aff3882354693a38de0f9477840dcfa1eb4ce8e1', 'compatibility-bundles.json': '275dd2bdbec9ed62913bd47be62285780ba88eadf17eac49ba18f6831ca5efc7', 'supported-versions.json': '31e606bdfa4de75ef878664b0fe9817703fc11a0b071928a23546bafb24bb589'}
+          for name, expected in checksums.items():
+              assert hashlib.sha256((Path('bins') / name).read_bytes()).hexdigest() == expected, name
+          for entry in json.loads(Path('bins/compatibility-bundles.json').read_text()):
+              name = entry['download_url'].rsplit('/', 1)[1]
+              path = Path('bins') / name
+              if path.exists(): assert hashlib.sha256(path.read_bytes()).hexdigest() == entry['sha256'], name
+          metadata = json.loads(Path('bins/patches-bundle.json').read_text())
+          assert metadata['version'] == metadata['upstream_version'] == 'v3.54.2'
+          assert metadata['piko_commit'] == '9abde9777d92af50fe1a53634262498fb630d7d3'
+          assert len(metadata['supported_versions']) == 15
+          Path('patches-bundle.json').write_bytes(Path('bins/patches-bundle.json').read_bytes())
+          Path('compatibility-bundles.json').write_bytes(Path('bins/compatibility-bundles.json').read_bytes())
+          PY
+      - name: Update official-version release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload v3.54.2 bins/*.mpp bins/supported-versions.json compatibility-bundles.json --repo "$GITHUB_REPOSITORY" --clobber
+          gh release edit v3.54.2 --repo "$GITHUB_REPOSITORY" --latest --title 'Piko 3.54.2' \
+            --notes '版本与上游 3.54.2 一致。{text} 使用点击下载时贴文当前显示的原文或译文，不发起翻译请求；命名完成后清理文字。新增外观中的经典蓝鸟图标及启动页切换、预览与确认。默认命名仍跟随上游。两套构建和命名、寄存器回归检查通过，统一包覆盖 15 个版本；12.28 原包修补及最终 DEX/清单检查通过。尚未进行手机运行实测。构建源：99b1900b3cc7f2962b0e096108ca2c741d252702。'
+      - name: Commit verified metadata
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add patches-bundle.json compatibility-bundles.json
+          git commit -m 'Update verified displayed caption and blue bird bundle metadata [skip ci]'
+          git push origin HEAD:codex/displayed-caption-icon
+      - name: Remove temporary validation release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release delete displayed-caption-check --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes
