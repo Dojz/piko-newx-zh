@@ -21,11 +21,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          git merge-base --is-ancestor 7bd2efe2df952086424e3e9ed3cf6ddaf642eda3 HEAD
-          git diff --exit-code 7bd2efe2df952086424e3e9ed3cf6ddaf642eda3 HEAD -- build_piko.py piko-overrides piko-patches translations compatibility build_compatible.py tests docs/assets
-          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38126650849 --jq .conclusion)" = success
-          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38126650849 --jq .head_sha)" = 7bd2efe2df952086424e3e9ed3cf6ddaf642eda3
-          gh release view blue-bird-adaptive-check --repo "$GITHUB_REPOSITORY" --json body --jq .body | grep -F '7bd2efe2df952086424e3e9ed3cf6ddaf642eda3'
+          git merge-base --is-ancestor 36bab13035e9fa53760f817407925fd0ebd95dbb HEAD
+          git diff --exit-code 36bab13035e9fa53760f817407925fd0ebd95dbb HEAD -- build_piko.py piko-overrides piko-patches translations compatibility build_compatible.py tests docs/assets
+          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38136699002 --jq .conclusion)" = success
+          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38136699002 --jq .head_sha)" = 36bab13035e9fa53760f817407925fd0ebd95dbb
+          gh release view blue-bird-adaptive-check --repo "$GITHUB_REPOSITORY" --json body --jq .body | grep -F '36bab13035e9fa53760f817407925fd0ebd95dbb'
           mkdir bins
           gh api "repos/$GITHUB_REPOSITORY/releases/tags/blue-bird-adaptive-check" > /tmp/candidate-release.json
           python - <<'PY'
@@ -43,7 +43,7 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           import hashlib, json, os
-          checksums = {'compatibility-bundles.json': '734aaf343f1c08a67ababa8f8f123955fe7a3769b8311de5cab7806f4bbb37c0', 'patches-bundle.json': '5c0659496fbf5e4dc26a0f1c77c33b3efe8dce5c1906861c67dba79eda7cfc2e', 'patches-current.mpp': '4f90e5670334c036ea0e85d541d5e92f51193b1f2393cf00e15e161d676fe401', 'patches-legacy.mpp': '63c0c8d431f22630b88c83a1bf3b8da2b0cae0cdadca7318b94b0bdba0af783d', 'patches.mpp': '0ea2a1d285937bdd497d26070c62a49d10a10f9988be106bf312ffd02d80a5a6', 'supported-versions.json': '31e606bdfa4de75ef878664b0fe9817703fc11a0b071928a23546bafb24bb589', 'patches-current-4f90e5670334c036ea0e85d541d5e92f51193b1f2393cf00e15e161d676fe401.mpp': '4f90e5670334c036ea0e85d541d5e92f51193b1f2393cf00e15e161d676fe401', 'patches-legacy-63c0c8d431f22630b88c83a1bf3b8da2b0cae0cdadca7318b94b0bdba0af783d.mpp': '63c0c8d431f22630b88c83a1bf3b8da2b0cae0cdadca7318b94b0bdba0af783d'}
+          checksums = {'compatibility-bundles.json': '84d5c26a17450ba7b415497e2fe7e160b5cd4028784ab70eb5b48c1c401dd332', 'patches-bundle.json': 'd09961b8109d7baff18eebdf9a890ea8ffc7ff28173695062f7331fed2c69402', 'patches-current-282013734067983e62f18c3c5adfdd4e9d8c808427980a85f789c01b150d476a.mpp': '282013734067983e62f18c3c5adfdd4e9d8c808427980a85f789c01b150d476a', 'patches-current.mpp': '282013734067983e62f18c3c5adfdd4e9d8c808427980a85f789c01b150d476a', 'patches-legacy-828c7b596d1fdd22523ca72408969defa6c4db31d77999624ada981d52f41680.mpp': '828c7b596d1fdd22523ca72408969defa6c4db31d77999624ada981d52f41680', 'patches-legacy.mpp': '828c7b596d1fdd22523ca72408969defa6c4db31d77999624ada981d52f41680', 'patches.mpp': 'b6f0a0e0dbbfb6013b69ab4b3a79c48da33f7f476f100dbcad3f84f6959beb99', 'supported-versions.json': '31e606bdfa4de75ef878664b0fe9817703fc11a0b071928a23546bafb24bb589'}
           for name, expected in checksums.items():
               actual = hashlib.sha256((Path('bins') / name).read_bytes()).hexdigest()
               assert actual == expected, f'{name}: expected {expected}, got {actual}'
@@ -73,7 +73,7 @@ jobs:
         run: |
           gh release upload v3.54.2 bins/*.mpp bins/supported-versions.json compatibility-bundles.json --repo "$GITHUB_REPOSITORY" --clobber
           gh release edit v3.54.2 --repo "$GITHUB_REPOSITORY" --latest --title 'Piko 3.54.2' \
-            --notes '经典图标采用 Twitter 官方 SVG 原始路径，转换成 Android 矢量前景和纯蓝背景，遵循与官方图标相同的系统自适应轮廓，避免白色底板内套小方块。图标预览、桌面和启动页使用标准矢量；选择页显示经典，再次确认页显示经典图标。保持统一源、上游版本 3.54.2 与 15 个兼容版本。两套实现构建、资源检查与选择映射检查通过；本次尚未进行最终 APK 或手机显示实测。构建源：7bd2efe2df952086424e3e9ed3cf6ddaf642eda3。'
+            --notes '修复经典图标导致的修补失败：ARSCLib 将独立 values 文件名解析成错误资源类型，报 Undefined entry name。背景改用完整纯蓝 drawable，保留官方 SVG 矢量、系统自适应轮廓、经典选项和经典图标确认标题。两套实现构建、15 个版本选择映射与真实 ARSCLib 资源编码检查通过，旧错误已复现并覆盖回归检查。后续自动发布已接入同一编码检查。保留统一源、上游版本 3.54.2 和当前显示文字命名。未进行手机运行实测。构建源：36bab13035e9fa53760f817407925fd0ebd95dbb。'
       - name: Commit verified metadata
         run: |
           git config user.name 'github-actions[bot]'
