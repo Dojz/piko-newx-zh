@@ -1,3 +1,102 @@
+## [3.56.0](https://github.com/Dojz/piko-newx-zh/compare/v3.54.2...v3.56.0) (2026-10-11)
+
+### New Patches
+* NewX: Remove ads
+* NewX: Choose app icon
+* NewX: Disable blur effects
+* NewX: Restore Twitter branding
+* NewX: Browse tweet object
+* NewX: Open canonical URLs
+* NewX: Clone
+* NewX: Crash logs
+* NewX: Custom font
+* NewX: Custom sharing domain
+* NewX: Customize drawer items
+* NewX: Theme
+* NewX: Feature switch overrides
+* NewX: Classic inline action spacing
+* NewX: Customize inline actions
+* NewX: Inline download button
+* NewX: Redirect downloads to chosen folder
+* NewX: Force highest video/audio quality
+* NewX: Customize media menu items
+* NewX: Set default media tab
+* NewX: Gallery profile Photos tab
+* NewX: Customize navigation bar
+* NewX: Hide post reply bar
+* NewX: Customize post menu items
+* NewX: Set default profile post sorting
+* NewX: Customize profile tabs
+* NewX: Set default reply sorting
+* NewX: Server error logging
+* NewX: Share post as image
+* NewX: Disable video player scrolling
+* NewX: Hide premium upsell
+* NewX: Unlock color customization
+* NewX: Unlock downloads
+* NewX: Customize timeline tabs
+* NewX: Disable automatic timeline refresh
+* NewX: Filter For You by topic
+* NewX: Hide AI-generated posts
+* NewX: Hide Discover more
+* NewX: Hide compose button
+* NewX: Hide new posts pill
+* NewX: Hide post dividers
+* NewX: Hide Spaces bar
+* NewX: Hide timeline tabs bar
+* NewX: Hide who to follow
+* NewX: Restore pinned home tab
+* NewX: Restore timeline position
+* NewX: Show poll results
+* NewX: Show sensitive media
+* NewX: Hide posts by verified account type
+* NewX: Filter posts by keyword
+* NewX: Remove ads [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Choose app icon [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Disable blur effects [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Restore Twitter branding [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Browse tweet object [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Open canonical URLs [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Crash logs [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Custom font [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Custom sharing domain [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Customize drawer items [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Theme [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Feature switch overrides [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Classic inline action spacing [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Customize inline actions [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Inline download button [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Force highest video/audio quality [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Set default media tab [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Gallery profile Photos tab [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Customize navigation bar [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Hide post reply bar [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Customize post menu items [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Set default profile post sorting [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Set default reply sorting [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Server error logging [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Share post as image [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Disable video player scrolling [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Hide premium upsell [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Unlock color customization [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Unlock downloads [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Customize timeline tabs [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Disable automatic timeline refresh [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Filter For You by topic [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Hide AI-generated posts [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Hide Discover more [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Hide compose button [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Hide new posts pill [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Hide post dividers [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Hide Spaces bar [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Hide timeline tabs bar [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Hide who to follow [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Restore timeline position [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Show poll results [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Show sensitive media [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Hide posts by verified account type [12.27.0-prod.01..12.30.0-alpha.05]
+* NewX: Filter posts by keyword [12.27.0-prod.01..12.30.0-alpha.05]
+
 ## [3.54.2-zh.58](https://github.com/Dojz/piko-newx-zh/compare/v3.54.2...v3.54.2-zh.58) (2026-10-10)
 
 ### New Patches
