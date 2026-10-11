@@ -34,7 +34,7 @@ class DownloadCaptionPatchTest {
             val original = presenter(registerCount)
             val patched = original.withDownloadCaptionHooks(
                 fieldReference("Lfixture/Presenter;->post:Ljava/lang/Object;"),
-                fieldReference("Lfixture/Event;->INSTANCE:Lfixture/Event;"),
+                fieldReference("Lfixture/Presenter;->state:Ljava/lang/Object;"),
             )
             assertEquals(original.implementation!!.registerCount, patched.body.implementation!!.registerCount)
             assertEquals(original.instructions.map { it.opcode }, patched.body.instructions.map { it.opcode })
@@ -107,6 +107,10 @@ class DownloadCaptionPatchTest {
                         else -> fail("Unexpected field $field")
                     }
                 }
+                Opcode.IPUT_OBJECT -> {
+                    assertEquals("presenter", registers[b()], "State field must use the stable receiver")
+                    assertEquals("state", registers[a()])
+                }
                 Opcode.IGET_OBJECT -> {
                     assertEquals("presenter", registers[b()], "Post field read must use the entry presenter")
                     registers[a()] = "post"
@@ -122,7 +126,7 @@ class DownloadCaptionPatchTest {
                 Opcode.INVOKE_STATIC, Opcode.INVOKE_STATIC_RANGE -> {
                     val target = (instruction as ReferenceInstruction).reference as MethodReference
                     assertEquals("record", target.name)
-                    assertEquals(listOf("post", "state", "event"), arguments().map { registers[it] })
+                    assertEquals(listOf("post", "state"), arguments().map { registers[it] })
                     recorded++
                 }
                 Opcode.IF_EQZ -> if (registers[a()] == 0) {

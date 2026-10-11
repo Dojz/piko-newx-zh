@@ -1,11 +1,14 @@
-name: Restore upstream version and download defaults
+name: Verify displayed caption and blue bird launcher
 on:
   push:
-    branches: [codex/upstream-version-defaults]
+    branches: [codex/displayed-caption-icon]
     paths:
       - .github/workflows/translation-verifier.yaml
       - build_piko.py
       - piko-overrides/**
+      - piko-patches/**
+      - tests/**
+      - translations/**
   workflow_dispatch:
 permissions:
   contents: write
@@ -70,7 +73,7 @@ jobs:
           metadata.update(version=tag,
               download_url=f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/releases/download/{tag}/patches.mpp',
               created_at=datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S'),
-              description='Piko 简体中文统一补丁：版本跟随上游，保留闪退修复、旧版本兼容和上游默认下载命名。',
+              description='Piko 简体中文统一补丁：按当前显示文字命名，外观中切换经典蓝鸟图标与启动页，保留旧版本兼容。',
               piko_commit=rebuilt[-1]['piko_commit'], upstream_version='v3.54.2',
               supported_versions=sorted(versions))
           metadata.pop('signature_download_url', None)
@@ -80,23 +83,14 @@ jobs:
               path = Path('bins') / name
               print(f'{name}: {path.stat().st_size} bytes, sha256={digest(path)}')
           PY
-      - name: Publish unified MPP
+      - name: Publish validation bundle
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if gh release view v3.54.2 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload v3.54.2 bins/*.mpp bins/supported-versions.json compatibility-bundles.json \
-              --repo "$GITHUB_REPOSITORY" --clobber
-          else
-            gh release create v3.54.2 bins/*.mpp bins/supported-versions.json compatibility-bundles.json \
-              --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'Piko 3.54.2'
-          fi
-          gh release edit v3.54.2 --repo "$GITHUB_REPOSITORY" --latest --title 'Piko 3.54.2' \
-            --notes '版本号与上游 3.54.2 一致。保留正常浏览闪退修复及新旧版本兼容实现。下载命名使用上游默认模板，原文和原生译文变量仅按用户选择启用。两套构建、回归测试及统一包兼容检查通过。'
-      - name: Commit verified source metadata
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add patches-bundle.json compatibility-bundles.json
-          git commit -m 'Follow upstream 3.54.2 and retain verified compatible builds [skip ci]'
-          git push origin HEAD:codex/upstream-version-defaults
+          gh release view displayed-caption-check --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create displayed-caption-check --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --prerelease --latest=false --title 'Displayed caption validation'
+          gh release upload displayed-caption-check bins/*.mpp bins/supported-versions.json \
+            compatibility-bundles.json patches-bundle.json --repo "$GITHUB_REPOSITORY" --clobber
+          gh release edit displayed-caption-check --repo "$GITHUB_REPOSITORY" --prerelease --latest=false \
+            --notes "Validation source: $GITHUB_SHA; internal MPP version remains 3.54.2."

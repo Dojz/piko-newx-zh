@@ -209,7 +209,7 @@
     <string name="piko_newx_download_filename_tokens">变量</string>
     <string name="piko_newx_download_filename_error_empty">请输入文件名模板</string>
     <string name="piko_newx_download_filename_error_unclosed">有一个左花括号未闭合</string>
-    <string name="piko_newx_download_filename_error_static">请加入 {id}、{timestamp}、{text} 或 {translatedText}</string>
+    <string name="piko_newx_download_filename_error_static">请加入 {id}、{timestamp} 或 {text}</string>
     <string name="piko_newx_download_filename_error_unknown">未知变量 {%1$s}</string>
     <string name="piko_newx_download_first_run_title">选择下载文件夹</string>
     <string name="piko_newx_download_first_run_images">下载图片需要指定文件夹。请选择一个方便查找的位置。</string>
@@ -480,5 +480,14 @@
     <string name="morphe_settings_import_reset">NewX 设置已恢复默认</string>
     <string name="morphe_settings_import_success">已恢复 %1$d 项 NewX 设置</string>
     <string name="morphe_settings_import_failure_parse">无法恢复 NewX 设置：%1$s</string>
-    <string name="piko_newx_download_translation_failed">帖子翻译失败，请在 X 中翻译后重试下载。</string>
+    <string name="piko_newx_app_icon_title">应用图标</string>
+    <string name="piko_newx_app_icon_summary">选择经典蓝鸟或原图标，并同步切换启动页</string>
+    <string name="piko_newx_app_icon_choose_title">选择应用图标</string>
+    <string name="piko_newx_app_icon_choose_summary">预览并切换应用图标与启动页</string>
+    <string name="piko_newx_app_icon_blue_bird">经典蓝鸟</string>
+    <string name="piko_newx_app_icon_original">原图标</string>
+    <string name="piko_newx_app_icon_confirm_summary">应用这个图标与启动页吗？桌面图标可能稍后刷新。</string>
+    <string name="piko_newx_app_icon_confirm">确认</string>
+    <string name="piko_newx_app_icon_changed">应用图标已更改</string>
+    <string name="piko_newx_app_icon_failed">无法更改应用图标</string>
 </resources>

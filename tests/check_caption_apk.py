@@ -65,17 +65,17 @@ for key,(dex,m,ins,records) in patched.items():
     assert body.get_code().get_ins_size()==old.get_code().get_ins_size(),key
     assert normalized(body)==normalized(old),(key,'original body changed')
     incoming=m.get_code().get_ins_size()
-    assert m.get_code().get_registers_size()==incoming+3,key
-    assert [x.get_name() for x in ins]==['invoke-direct','move-result-object','move-object','iget-object','sget-object','invoke-static','return-object'],(key,[x.get_name() for x in ins])
+    assert m.get_code().get_registers_size()==incoming+2,key
+    assert [x.get_name() for x in ins]==['invoke-direct','move-result-object','move-object','iput-object','iget-object','invoke-static','return-object'],(key,[x.get_name() for x in ins])
     assert '$pikoCaption(' in ins[0].get_output(),key
-    assert [x[1] for x in ins[0].get_operands() if int(x[0])==0]==list(range(3,3+incoming)),key
+    assert [x[1] for x in ins[0].get_operands() if int(x[0])==0]==list(range(2,2+incoming)),key
     assert ins[1].get_operands()[0][1]==1,key
-    assert [x[1] for x in ins[2].get_operands()]==[0,3],key
-    assert [x[1] for x in ins[3].get_operands()[:2]]==[0,0],key
+    assert [x[1] for x in ins[2].get_operands()]==[0,2],key
+    assert [x[1] for x in ins[3].get_operands()[:2]]==[1,0],key
     assert ins[3].get_operands()[2][2].startswith(key[0]+'->'),key
-    assert ins[4].get_operands()[0][1]==2,key
+    assert [x[1] for x in ins[4].get_operands()[:2]]==[0,0],key
     assert records==[5],key
-    assert [x[1] for x in ins[5].get_operands() if int(x[0])==0]==[0,1,2],key
+    assert [x[1] for x in ins[5].get_operands() if int(x[0])==0]==[0,1],key
     assert ins[6].get_operands()[0][1]==1,key
     report.append({'owner':key[0],'method':key[1]+key[2],'dex':dex,'body_registers':body.get_code().get_registers_size(),'entry_registers':m.get_code().get_registers_size(),'original_returns_preserved':sum(x.get_name()=='return-object' for x in oldins)})
 print(json.dumps(report,indent=2))
