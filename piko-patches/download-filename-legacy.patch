@@ -302,15 +302,16 @@ index fb67802d..21e79b02 100644
      <string name="piko_newx_download_filename_error_unknown">Unknown token {%1$s}</string>
  
      <string name="piko_newx_download_first_run_title">Choose a download folder</string>
-@@ -460,4 +460,14 @@
+@@ -460,4 +460,15 @@
      <string name="piko_newx_settings_search_clear">Clear search</string>
      <string name="piko_newx_settings_search_no_results">No results for \"%s\"</string>
  
 +    <string name="piko_newx_app_icon_title">App icon</string>
-+    <string name="piko_newx_app_icon_summary">Choose the classic blue bird or the original icon and splash screen</string>
++    <string name="piko_newx_app_icon_summary">Choose the classic or the original icon and splash screen</string>
 +    <string name="piko_newx_app_icon_choose_title">Choose app icon</string>
 +    <string name="piko_newx_app_icon_choose_summary">Preview and switch the app icon and splash screen</string>
-+    <string name="piko_newx_app_icon_blue_bird">Classic blue bird</string>
++    <string name="piko_newx_app_icon_blue_bird">Classic</string>
++    <string name="piko_newx_app_icon_classic_title">Classic icon</string>
 +    <string name="piko_newx_app_icon_original">Original icon</string>
 +    <string name="piko_newx_app_icon_confirm_summary">Apply this icon and splash screen? The launcher may take a moment to refresh.</string>
 +    <string name="piko_newx_app_icon_confirm">Confirm</string>

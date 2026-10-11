@@ -35,6 +35,7 @@ public final class RelocateBundle {
                     // A rebuild hash would change those keys on every update. Use the original
                     // compatibility cohort instead; the current implementation keeps upstream names.
                     if (text.startsWith("NewX: ")) return text + selectionSuffix;
+                    if (text.equals("newx/launcher") || text.startsWith("newx/launcher/")) return prefix + text;
                     for (String root : List.of("addresources", "extensions", "twitter")) {
                         if (text.equals(root) || text.startsWith(root + "/")) return prefix + text;
                     }

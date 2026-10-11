@@ -481,10 +481,11 @@
     <string name="morphe_settings_import_success">已恢复 %1$d 项 NewX 设置</string>
     <string name="morphe_settings_import_failure_parse">无法恢复 NewX 设置：%1$s</string>
     <string name="piko_newx_app_icon_title">应用图标</string>
-    <string name="piko_newx_app_icon_summary">选择经典蓝鸟或原图标，并同步切换启动页</string>
+    <string name="piko_newx_app_icon_summary">选择经典或原图标，并同步切换启动页</string>
     <string name="piko_newx_app_icon_choose_title">选择应用图标</string>
     <string name="piko_newx_app_icon_choose_summary">预览并切换应用图标与启动页</string>
-    <string name="piko_newx_app_icon_blue_bird">经典蓝鸟</string>
+    <string name="piko_newx_app_icon_blue_bird">经典</string>
+    <string name="piko_newx_app_icon_classic_title">经典图标</string>
     <string name="piko_newx_app_icon_original">原图标</string>
     <string name="piko_newx_app_icon_confirm_summary">应用这个图标与启动页吗？桌面图标可能稍后刷新。</string>
     <string name="piko_newx_app_icon_confirm">确认</string>

@@ -73,7 +73,7 @@ jobs:
           metadata.update(version=tag,
               download_url=f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/releases/download/{tag}/patches.mpp',
               created_at=datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S'),
-              description='Piko 简体中文统一补丁：蓝鸟图标遵循官方自适应轮廓，按当前显示文字命名，保留新旧版本兼容。',
+              description='Piko 简体中文统一补丁：经典图标使用官方矢量与自适应轮廓，按当前显示文字命名，保留新旧版本兼容。',
               piko_commit=rebuilt[-1]['piko_commit'], upstream_version='v3.54.2',
               supported_versions=sorted(versions))
           metadata.pop('signature_download_url', None)
@@ -94,3 +94,11 @@ jobs:
             compatibility-bundles.json patches-bundle.json --repo "$GITHUB_REPOSITORY" --clobber
           gh release edit blue-bird-adaptive-check --repo "$GITHUB_REPOSITORY" --prerelease --latest=false \
             --notes "Validation source: $GITHUB_SHA; internal MPP version remains 3.54.2."
+      - uses: actions/upload-artifact@v4
+        with:
+          name: classic-icons-validation
+          path: |
+            bins/*.mpp
+            bins/supported-versions.json
+            patches-bundle.json
+            compatibility-bundles.json

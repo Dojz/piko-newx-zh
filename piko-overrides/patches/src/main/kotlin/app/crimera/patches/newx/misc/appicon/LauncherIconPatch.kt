@@ -27,20 +27,16 @@ private var launcherDescriptor: String? = null
 
 internal val newXLauncherIconResources = resourcePatch {
     execute {
-        // Use the same adaptive-icon contract as the native launcher. A complete legacy
-        // bitmap gets normalized into a small square on an OEM's white fallback plate.
-        // The upstream foreground already has the adaptive canvas/safe-zone padding;
-        // its blue background must fill the entire mask, not sit inside that bitmap.
+        // Keep the official SVG bird as a VectorDrawable at every display size.
+        // Android applies the native adaptive mask to a full-bleed blue background.
+        copyResources("newx/launcher", ResourceGroup("drawable",
+            "piko_launcher_classic_foreground.xml", "piko_classic_splash.xml"))
+        // Older launchers retain the upstream bitmap fallback; API 26+ selects anydpi XML.
         for (density in listOf("mdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi")) {
             val folder = "mipmap-$density"
-            copyResources("twitter/bringbacktwitter", ResourceGroup(folder,
-                "ic_launcher_twitter.webp", "ic_launcher_twitter_foreground.webp"))
+            copyResources("twitter/bringbacktwitter", ResourceGroup(folder, "ic_launcher_twitter.webp"))
             val icons = get("res").resolve(folder)
-            for ((source, target) in listOf(
-                "ic_launcher_twitter.webp" to "piko_launcher_blue_bird.webp",
-                "ic_launcher_twitter_foreground.webp" to "piko_launcher_blue_bird_foreground.webp")) {
-                icons.resolve(source).copyTo(icons.resolve(target), overwrite = true)
-            }
+            icons.resolve("ic_launcher_twitter.webp").copyTo(icons.resolve("piko_launcher_blue_bird.webp"), overwrite = true)
         }
         get("res").resolve("values").resolve("piko_launcher_blue_bird_colors.xml").writeText(
             """<resources><color name="piko_launcher_blue_bird_background">#ff1da1f2</color></resources>""")
@@ -48,17 +44,16 @@ internal val newXLauncherIconResources = resourcePatch {
             val folder = get("res").resolve("mipmap-anydpi-v$api")
             folder.mkdirs()
             val monochrome = if (api >= 33)
-                """<monochrome android:drawable="@mipmap/piko_launcher_blue_bird_foreground"/>""" else ""
+                """<monochrome android:drawable="@drawable/piko_launcher_classic_foreground"/>""" else ""
             folder.resolve("piko_launcher_blue_bird.xml").writeText(
                 """<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
                     <background android:drawable="@color/piko_launcher_blue_bird_background"/>
-                    <foreground android:drawable="@mipmap/piko_launcher_blue_bird_foreground"/>
+                    <foreground android:drawable="@drawable/piko_launcher_classic_foreground"/>
                     $monochrome
                 </adaptive-icon>""")
         }
-        copyResources("twitter/bringbacktwitter", ResourceGroup("drawable", "splash_screen_icon.xml"))
         val drawable = get("res").resolve("drawable")
-        drawable.resolve("splash_screen_icon.xml").copyTo(drawable.resolve("piko_blue_bird_splash.xml"), overwrite = true)
+        drawable.resolve("piko_classic_splash.xml").copyTo(drawable.resolve("piko_blue_bird_splash.xml"), overwrite = true)
         val manifest = document("AndroidManifest.xml").use { configureLauncherManifest(it) }
         launcherDescriptor = manifest.descriptor
         if (manifest.added) document("res/values/styles.xml").use { styles ->

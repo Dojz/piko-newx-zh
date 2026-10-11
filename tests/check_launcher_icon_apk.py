@@ -3,15 +3,15 @@
 Final APK integration check (optional androguard and Pillow dependencies):
 python tests/check_launcher_icon_apk.py patched.apk
 """
-import io
 import sys
+from pathlib import Path
+import xml.etree.ElementTree as ET
 from zipfile import ZipFile
 
 from loguru import logger
 logger.remove()
 from androguard.core.apk import APK
 from androguard.core.axml import AXMLPrinter
-from PIL import Image
 
 ANDROID = "{http://schemas.android.com/apk/res/android}"
 
@@ -29,6 +29,8 @@ def check(path):
     configs = resources.get_resolved_res_configs(resource_id)
     adaptive = {config.get_sdk_version(): file for config, file in configs if file.endswith(".xml")}
     assert 26 in adaptive and 33 in adaptive, "Missing adaptive and themed launcher variants"
+    official = ET.parse(Path(__file__).resolve().parents[1] / "docs/assets/twitter-logo.svg")
+    official_path = official.find(".//{http://www.w3.org/2000/svg}path").get("d")
     with ZipFile(path) as files:
         for api, file in adaptive.items():
             root = AXMLPrinter(files.read(file)).get_xml_obj()
@@ -41,17 +43,23 @@ def check(path):
                 assert layers.get("monochrome") == layers["foreground"], "Themed icons need the bird silhouette"
             foreground_id = int(layers["foreground"].removeprefix("@"), 16)
             foregrounds = resources.get_resolved_res_configs(foreground_id)
-            assert len(foregrounds) >= 5, "Missing foreground density variants"
+            assert foregrounds, "Missing vector foreground"
             for _, foreground in foregrounds:
-                image = Image.open(io.BytesIO(files.read(foreground))).convert("RGBA")
-                width, height = image.size
-                assert width == height and image.getpixel((0, 0))[3] == 0
-                bounds = image.getchannel("A").getbbox()
-                assert bounds and all(width * .2 < v < width * .8 for v in bounds), bounds
-                assert all(r == g == b == 255 for r, g, b, alpha in image.getdata() if alpha), (
-                    "Foreground embeds a background; expected only the white bird on transparency"
-                )
-    print("PASS: alias icon/roundIcon use full-bleed blue adaptive layers, five safe-zone foreground densities and themed silhouette")
+                assert foreground.endswith(".xml"), "Foreground must scale as a vector, not a bitmap"
+                vector = AXMLPrinter(files.read(foreground)).get_xml_obj()
+                assert vector.tag == "vector"
+                group = vector.find("group")
+                paths = vector.findall(".//path")
+                assert group is not None and len(paths) == 1, "Unexpected vector artwork/background"
+                assert abs(float(group.get(ANDROID + "scaleX")) - 44 / 248) < .00001
+                assert group.get(ANDROID + "scaleX") == group.get(ANDROID + "scaleY"), "Bird proportions changed"
+                assert paths[0].get(ANDROID + "fillColor").lower() == "#ffffffff"
+                assert "".join(paths[0].get(ANDROID + "pathData").split()) == "".join(official_path.split()), "Official SVG path changed"
+    for name, expected in (("piko_newx_app_icon_blue_bird", "经典"),
+                           ("piko_newx_app_icon_classic_title", "经典图标")):
+        string_id = resources.get_res_id_by_key(apk.get_package(), "string", name)
+        assert string_id and expected in [v for _, v in resources.get_resolved_res_configs(string_id)], name
+    print("PASS: adaptive icon/roundIcon, full-bleed blue background, official SVG vector foreground, themed silhouette and Classic labels")
 
 
 if __name__ == "__main__":

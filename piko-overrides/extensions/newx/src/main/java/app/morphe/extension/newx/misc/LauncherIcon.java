@@ -77,7 +77,9 @@ public final class LauncherIcon {
     }
 
     private static void confirm(Activity activity, ComponentName component, String label, Drawable icon) {
-        DialogView dialog = new DialogView(activity).setTitle(label)
+        String title = component.getClassName().equals(PREFIX + "BlueBird")
+                ? str("piko_newx_app_icon_classic_title") : label;
+        DialogView dialog = new DialogView(activity).setTitle(title)
                 .setSubtitle(str("piko_newx_app_icon_confirm_summary"));
         ImageView preview = new ImageView(activity);
         preview.setImageDrawable(icon);
