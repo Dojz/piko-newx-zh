@@ -137,6 +137,30 @@ def apply_native_download_translation(piko_directory: Path) -> None:
     icon_source = icon_source.replace("PikoTheme.dpToPx", theme.rsplit(".", 1)[1] + ".dpToPx")
     icon.write_text(icon_source)
 
+    # Each implementation owns a different extension/settings ABI. Enforce its
+    # existing target metadata inside the dependency graph as well as in the UI,
+    # so expert-mode selections cannot produce an APK with both startup paths.
+    extension = piko_directory / "patches/src/main/kotlin/app/crimera/patches/newx/misc/extension/ExtensionPatch.kt"
+    source = extension.read_text()
+    original = """internal val newXExtensionPatch =
+    sharedExtensionPatch(
+        listOf("shared", "newx"),
+        newXInitHook,
+    )"""
+    guarded = """internal val newXExtensionPatch =
+    bytecodePatch(default = false) {
+        dependsOn(
+            newXImplementationGuardPatch,
+            sharedExtensionPatch(listOf("shared", "newx"), newXInitHook),
+        )
+    }"""
+    if source.count(original) != 1:
+        raise ValueError("NewX extension dependency anchor changed")
+    source = source.replace(original, guarded, 1)
+    source = source.replace("import app.morphe.patches.all.misc.extension.sharedExtensionPatch",
+                            "import app.morphe.patcher.patch.bytecodePatch\nimport app.morphe.patches.all.misc.extension.sharedExtensionPatch", 1)
+    extension.write_text(source)
+
 
 def install_instagram_screen_translate_button(piko_directory: Path) -> None:
     """Install zh-CN Instagram UI enhancements and their three opt-in switches."""

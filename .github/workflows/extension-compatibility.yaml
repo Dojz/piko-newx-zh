@@ -1,0 +1,96 @@
+name: Verify NewX extension compatibility guard
+on:
+  push:
+    branches: [codex/extension-compatibility-guard]
+    paths:
+      - .github/workflows/extension-compatibility.yaml
+      - build_piko.py
+      - piko-overrides/**
+      - piko-patches/**
+      - tests/**
+      - translations/**
+  workflow_dispatch:
+permissions:
+  contents: write
+  packages: read
+concurrency:
+  group: piko-newx-zh-release
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+      - run: python tests/check_download_caption.py
+      - name: Build and verify both implementations
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PIKO_VALIDATE: "1"
+        run: |
+          python - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+          from build_piko import build_piko_patches
+          from build_compatible import assemble_compatible_bundle, digest, fetch, retain_bundle
+          tag = 'v3.54.2'
+          version = tag[1:]
+          entries = [entry for entry in json.loads(Path('compatibility-bundles.json').read_text())
+                     if entry['download_url'] not in {
+                         f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/releases/download/{tag}/patches-current.mpp',
+                         f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/releases/download/{tag}/patches-legacy.mpp'}]
+          Path('bins').mkdir(exist_ok=True)
+          rebuilt = []
+          for commit, name in (
+              ('a3939be95cd27dd9cf72e25afea32285bd7e80ac', 'patches-legacy.mpp'),
+              ('9abde9777d92af50fe1a53634262498fb630d7d3', 'patches-current.mpp'),
+          ):
+              os.environ['PIKO_COMMIT'] = commit
+              artifact = Path('bins') / name
+              build = build_piko_patches(str(artifact), patch_version=version)
+              assert build.commit == commit
+              rebuilt.append({'version': tag, 'download_url': artifact.resolve().as_uri(),
+                              'sha256': digest(artifact), 'piko_commit': build.commit})
+          Path('compatibility-bundles.json').write_text(json.dumps(entries + rebuilt))
+          fetch('https://github.com/MorpheApp/morphe-desktop/releases/download/v1.18.1/morphe-desktop-1.18.1-all.jar',
+                Path('bins/morphe-cli.jar'), '1b506ab5f03d16a2f65026d5e0e1910d01fc1e2152f21eaeb44ed2f30856597b')
+          versions = assemble_compatible_bundle(Path('bins/patches-current.mpp'), Path('bins/patches.mpp'),
+                                                version, Path('bins/morphe-cli.jar'))
+          required = {'12.28.0-alpha.01', '12.28.0-alpha.04', '12.28.0-prod.01', '12.29.0-alpha.04',
+                      '12.29.1-prod.01', '12.30.0-alpha.05', '12.30.0-prod.01'}
+          assert required <= versions
+          Path('compatibility-bundles.json').write_text(json.dumps(entries, indent=2) + '\n')
+          for entry, name in zip(rebuilt, ('patches-legacy.mpp', 'patches-current.mpp')):
+              retain_bundle(Path('bins') / name, tag, os.environ['GITHUB_REPOSITORY'], entry['piko_commit'])
+          metadata = json.loads(Path('patches-bundle.json').read_text())
+          metadata.update(version=tag,
+              download_url=f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/releases/download/{tag}/patches.mpp',
+              created_at=datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S'),
+              description='Piko 简体中文统一补丁：检查扩展实现兼容性，按当前显示文字命名，蓝鸟图标与启动页，保留旧版本兼容。',
+              piko_commit=rebuilt[-1]['piko_commit'], upstream_version='v3.54.2',
+              supported_versions=sorted(versions))
+          metadata.pop('signature_download_url', None)
+          Path('patches-bundle.json').write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + '\n')
+          Path('bins/supported-versions.json').write_text(json.dumps(sorted(versions), indent=2) + '\n')
+          for name in ('patches.mpp', 'patches-current.mpp', 'patches-legacy.mpp'):
+              path = Path('bins') / name
+              print(f'{name}: {path.stat().st_size} bytes, sha256={digest(path)}')
+          PY
+      - name: Publish validation bundle
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view settings-compatibility-check --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create settings-compatibility-check --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --prerelease --latest=false --title 'Settings compatibility validation'
+          gh release upload settings-compatibility-check bins/*.mpp bins/supported-versions.json \
+            compatibility-bundles.json patches-bundle.json --repo "$GITHUB_REPOSITORY" --clobber
+          gh release edit settings-compatibility-check --repo "$GITHUB_REPOSITORY" --prerelease --latest=false \
+            --notes "Validation source: $GITHUB_SHA; internal MPP version remains 3.54.2."
