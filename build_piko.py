@@ -100,6 +100,9 @@ def apply_native_download_translation(piko_directory: Path) -> None:
     caption = patch.with_name("DownloadCaptionPatch.kt")
     caption.write_text(caption.read_text().replace(
         "app.crimera.patches.newx.utils.requireExactlyOne", cardinality_imports[0]))
+    launcher_manifest = piko_directory / "patches/src/main/kotlin/app/crimera/patches/newx/misc/appicon/LauncherManifest.kt"
+    launcher_manifest.write_text(launcher_manifest.read_text().replace(
+        "app.crimera.patches.newx.utils.requireExactlyOne", cardinality_imports[0]))
     anchor = "            newXInlineDownloadModelResolutionPatch,"
     if text.count(anchor) != 1:
         raise ValueError("NewX inline download dependency anchor changed")

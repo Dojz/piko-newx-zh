@@ -21,10 +21,8 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.util.ResourceGroup
 import app.morphe.util.copyResources
-import org.w3c.dom.Element
 
-private const val ALIAS = "app.morphe.extension.newx.launcher."
-private const val BLUE_ACTIVITY = "app.morphe.extension.newx.misc.BlueBirdActivity"
+internal const val BLUE_ACTIVITY = "app.morphe.extension.newx.misc.BlueBirdActivity"
 private var launcherDescriptor: String? = null
 
 internal val newXLauncherIconResources = resourcePatch {
@@ -35,72 +33,21 @@ internal val newXLauncherIconResources = resourcePatch {
         copyResources("twitter/bringbacktwitter", ResourceGroup("drawable", "splash_screen_icon.xml"))
         val drawable = get("res").resolve("drawable")
         drawable.resolve("splash_screen_icon.xml").copyTo(drawable.resolve("piko_blue_bird_splash.xml"), overwrite = true)
-        document("AndroidManifest.xml").use { doc ->
-            val application = doc.getElementsByTagName("application").item(0) as Element
-            val activities = doc.getElementsByTagName("activity")
-            val launchers = (0 until activities.length).map { activities.item(it) as Element }.filter { activity ->
-                val categories = activity.getElementsByTagName("category")
-                (0 until categories.length).any {
-                    (categories.item(it) as Element).getAttribute("android:name") == "android.intent.category.LAUNCHER"
-                }
+        val manifest = document("AndroidManifest.xml").use { configureLauncherManifest(it) }
+        launcherDescriptor = manifest.descriptor
+        if (manifest.added) document("res/values/styles.xml").use { styles ->
+            val style = styles.createElement("style")
+            style.setAttribute("name", "PikoBlueBirdSplash")
+            style.setAttribute("parent", manifest.theme)
+            for ((name, value) in listOf(
+                "windowSplashScreenAnimatedIcon" to "@drawable/piko_blue_bird_splash",
+                "windowSplashScreenBackground" to "#ff1da1f2")) {
+                val item = styles.createElement("item")
+                item.setAttribute("name", name)
+                item.textContent = value
+                style.appendChild(item)
             }
-            if (launchers.size != 1) throw PatchException("NewX launcher activity: expected one, got ${launchers.size}")
-            val launcher = launchers.single()
-            val launcherName = launcher.getAttribute("android:name")
-            val packageName = doc.documentElement.getAttribute("package")
-            val fullName = if (launcherName.startsWith(".")) packageName + launcherName else launcherName
-            launcherDescriptor = "L" + fullName.replace('.', '/') + ";"
-            val theme = launcher.getAttribute("android:theme")
-            if (!theme.startsWith("@style/")) throw PatchException("NewX launcher splash theme missing")
-            document("res/values/styles.xml").use { styles ->
-                val style = styles.createElement("style")
-                style.setAttribute("name", "PikoBlueBirdSplash")
-                style.setAttribute("parent", theme)
-                for ((name, value) in listOf(
-                    "windowSplashScreenAnimatedIcon" to "@drawable/piko_blue_bird_splash",
-                    "windowSplashScreenBackground" to "#ff1da1f2")) {
-                    val item = styles.createElement("item")
-                    item.setAttribute("name", name)
-                    item.textContent = value
-                    style.appendChild(item)
-                }
-                styles.documentElement.appendChild(style)
-            }
-            val blueActivity = launcher.cloneNode(true) as Element
-            blueActivity.setAttribute("android:name", BLUE_ACTIVITY)
-            blueActivity.setAttribute("android:theme", "@style/PikoBlueBirdSplash")
-            blueActivity.setAttribute("android:icon", "@mipmap/piko_launcher_blue_bird")
-            blueActivity.setAttribute("android:roundIcon", "@mipmap/piko_launcher_blue_bird")
-            val blueFilters = blueActivity.getElementsByTagName("intent-filter")
-            (0 until blueFilters.length).map { blueFilters.item(it) }.forEach { blueActivity.removeChild(it) }
-            application.appendChild(blueActivity)
-            val filters = launcher.getElementsByTagName("intent-filter")
-            val launcherFilters = (0 until filters.length).map { filters.item(it) as Element }.filter { filter ->
-                val categories = filter.getElementsByTagName("category")
-                (0 until categories.length).any {
-                    (categories.item(it) as Element).getAttribute("android:name") == "android.intent.category.LAUNCHER"
-                }
-            }
-            // Keep the real activity enabled for deep links and in-app navigation. Switch aliases only.
-            for ((suffix, enabled) in listOf("Default" to true, "BlueBird" to false)) {
-                val alias = doc.createElement("activity-alias")
-                alias.setAttribute("android:name", ALIAS + suffix)
-                alias.setAttribute("android:targetActivity", if (suffix == "BlueBird") BLUE_ACTIVITY else launcherName)
-                alias.setAttribute("android:enabled", enabled.toString())
-                alias.setAttribute("android:exported", "true")
-                if (suffix == "BlueBird") {
-                    alias.setAttribute("android:icon", "@mipmap/piko_launcher_blue_bird")
-                    alias.setAttribute("android:roundIcon", "@mipmap/piko_launcher_blue_bird")
-                } else {
-                    for (attribute in listOf("android:icon", "android:roundIcon")) {
-                        val value = launcher.getAttribute(attribute).ifEmpty { application.getAttribute(attribute) }
-                        if (value.isNotEmpty()) alias.setAttribute(attribute, value)
-                    }
-                }
-                launcherFilters.forEach { alias.appendChild(it.cloneNode(true)) }
-                application.appendChild(alias)
-            }
-            launcherFilters.forEach { launcher.removeChild(it) }
+            styles.documentElement.appendChild(style)
         }
     }
 }
