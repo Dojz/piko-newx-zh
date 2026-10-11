@@ -105,6 +105,35 @@ def apply_native_download_translation(piko_directory: Path) -> None:
         raise ValueError("NewX inline download dependency anchor changed")
     patch.write_text(text.replace(anchor, anchor + "\n            newXDownloadCaptionPatch,", 1))
 
+    # Follow the checkout's settings/UI contracts across the upstream shared-library migration.
+    font_patch = (piko_directory / "patches/src/main/kotlin/app/crimera/patches/newx/misc/customfont/CustomFontPatch.kt").read_text()
+    icon_patch = piko_directory / "patches/src/main/kotlin/app/crimera/patches/newx/misc/appicon/LauncherIconPatch.kt"
+    icon_source = icon_patch.read_text()
+    for name in ("action", "group", "settingStrings"):
+        candidates = re.findall(r"^import ([\w.]+\." + name + r")$", font_patch, re.MULTILINE)
+        if len(candidates) != 1:
+            raise ValueError(f"NewX settings {name} import changed")
+        icon_source = icon_source.replace(f"app.crimera.patches.settings.{name}", candidates[0])
+    icon_patch.write_text(icon_source)
+    font = (piko_directory / "extensions/newx/src/main/java/app/morphe/extension/newx/misc/UpdateFont.java").read_text()
+    icon = piko_directory / "extensions/newx/src/main/java/app/morphe/extension/newx/misc/LauncherIcon.java"
+    icon_source = icon.read_text()
+    imports = {}
+    for name in ("SettingsActionHandler", "DialogView", "ButtonView"):
+        candidates = re.findall(r"^import ([\w.]+\." + name + r");$", font, re.MULTILINE)
+        if len(candidates) != 1:
+            raise ValueError(f"NewX {name} UI import changed")
+        imports[name] = candidates[0]
+        icon_source = re.sub(r"(?m)^import [\w.]+\." + name + r";", "import " + candidates[0] + ";", icon_source)
+    dialog_path = piko_directory / "extensions/newx/src/main/java" / (imports["DialogView"].replace(".", "/") + ".java")
+    if dialog_path.is_file():
+        theme = imports["DialogView"].rsplit(".", 1)[0] + ".Theme"
+    else:
+        theme = "app.morphe.extension.crimera.theme.PikoTheme"
+    icon_source = icon_source.replace("app.morphe.extension.crimera.theme.PikoTheme", theme)
+    icon_source = icon_source.replace("PikoTheme.dpToPx", theme.rsplit(".", 1)[1] + ".dpToPx")
+    icon.write_text(icon_source)
+
 
 def install_instagram_screen_translate_button(piko_directory: Path) -> None:
     """Install zh-CN Instagram UI enhancements and their three opt-in switches."""
