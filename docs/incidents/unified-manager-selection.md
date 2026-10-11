@@ -35,6 +35,13 @@ automatic release workflow. Future releases keep one unified default download
 and preserve retained supported targets. Runtime compatibility/startup guards,
 filename behavior, extensions, and the upstream version remain unchanged.
 
+The final unified MPP has 95 distinct NewX declaration names, all present in
+its Android DEX entries. A clean 12.28.0-prod.01 input patched successfully
+with 42 compatible retained patches, including Choose app icon and Browse
+tweet object. The resulting APK passed the single settings implementation and
+startup loader check. These are internal build/structure checks, not a device
+startup test.
+
 Existing selections made with ambiguous plain/numeric keys may need a one-time
 reset after this migration. The compatible retained declarations then use the
 stable cohort names on subsequent rebuilds. Device startup is not covered by

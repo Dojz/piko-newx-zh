@@ -1,0 +1,73 @@
+name: Promote verified unified NewX manager selection
+on:
+  push:
+    branches: [codex/manager-stable-patch-names]
+    paths: [.github/workflows/promote-unified-selection.yaml]
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: piko-newx-zh-release
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify candidate provenance and download built bundles
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor c800248e0d90927ff923b3f306821d1918ed8d6e HEAD
+          git diff --exit-code c800248e0d90927ff923b3f306821d1918ed8d6e HEAD -- build_piko.py piko-overrides piko-patches translations compatibility build_compatible.py tests
+          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38123763938 --jq .conclusion)" = success
+          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38123763938 --jq .head_sha)" = c800248e0d90927ff923b3f306821d1918ed8d6e
+          gh release view unified-selection-check --repo "$GITHUB_REPOSITORY" --json body --jq .body | grep -F 'c800248e0d90927ff923b3f306821d1918ed8d6e'
+          mkdir bins
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/unified-selection-check" > /tmp/candidate-release.json
+          python - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+          release = json.loads(Path('/tmp/candidate-release.json').read_text())
+          for asset in release['assets']:
+              name = asset['name']
+              if not name.endswith(('.mpp', '.json')): continue
+              assert Path(name).name == name
+              with (Path('bins') / name).open('wb') as output:
+                  subprocess.run(['gh', 'api', f"repos/{os.environ['GITHUB_REPOSITORY']}/releases/assets/{asset['id']}",
+                                  '-H', 'Accept: application/octet-stream'], stdout=output, check=True)
+          PY
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os
+          checksums = {'patches-bundle.json': '3b348c2ba0620d50b8700617d9825f9c731b05425c19f21c707430bf04f4c47a', 'patches.mpp': '81be0187682ec8e8beea2ba6eeb12038b0c81bfeb4b167c635d732a8f2b63160', 'supported-versions.json': '31e606bdfa4de75ef878664b0fe9817703fc11a0b071928a23546bafb24bb589'}
+          for name, expected in checksums.items():
+              actual = hashlib.sha256((Path('bins') / name).read_bytes()).hexdigest()
+              assert actual == expected, f'{name}: expected {expected}, got {actual}'
+          metadata = json.loads(Path('bins/patches-bundle.json').read_text())
+          assert metadata['version'] == metadata['upstream_version'] == 'v3.54.2'
+          assert metadata['piko_commit'] == '9abde9777d92af50fe1a53634262498fb630d7d3'
+          assert len(metadata['supported_versions']) == 15
+          Path('patches-bundle.json').write_bytes(Path('bins/patches-bundle.json').read_bytes())
+          PY
+      - name: Update official-version release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload v3.54.2 bins/patches.mpp bins/supported-versions.json --repo "$GITHUB_REPOSITORY" --clobber
+          gh release edit v3.54.2 --repo "$GITHUB_REPOSITORY" --latest --title 'Piko 3.54.2' \
+            --notes '统一包为保留的旧版补丁生成稳定的版本分组名称，解决管理器同名补丁的临时编号因加载顺序变化而选错实现的问题。后续自动发布使用同一组装与验证流程，无需单独导入旧版包。版本保持上游 3.54.2，统一包覆盖 15 个版本；蓝鸟图标与启动页、当前显示文字命名及扩展兼容检查保留。15 个版本、12 种 UI/修补器加载顺序检查通过，重新构建时名称稳定检查通过；12.28 原包内部 42 项修补及单一设置初始化检查通过。现有同名或数字编号选择需升级后恢复一次默认选择。尚未进行手机运行实测。构建源：c800248e0d90927ff923b3f306821d1918ed8d6e。'
+      - name: Commit verified metadata
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add patches-bundle.json
+          git commit -m 'Update verified unified manager selection metadata [skip ci]'
+          git push origin HEAD:codex/manager-stable-patch-names
+      - name: Remove temporary validation release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release delete unified-selection-check --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes
