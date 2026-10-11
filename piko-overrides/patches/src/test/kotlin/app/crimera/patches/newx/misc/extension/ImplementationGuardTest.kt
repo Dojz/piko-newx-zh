@@ -12,10 +12,12 @@ class ImplementationGuardTest {
     @Test
     fun `the extension rejects the other family even when manager compatibility is bypassed`() {
         val current = Compatibility(
+            name = "NewX current test",
             packageName = "com.twitter.android",
             targets = listOf(AppTarget(version = "12.30.0-prod.01")),
         )
         val legacy = Compatibility(
+            name = "NewX legacy test",
             packageName = "com.twitter.android",
             targets = listOf(AppTarget(version = "12.28.0-prod.01")),
         )
