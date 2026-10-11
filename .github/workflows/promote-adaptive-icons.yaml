@@ -21,20 +21,22 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          git merge-base --is-ancestor 36bab13035e9fa53760f817407925fd0ebd95dbb HEAD
-          git diff --exit-code 36bab13035e9fa53760f817407925fd0ebd95dbb HEAD -- build_piko.py piko-overrides piko-patches translations compatibility build_compatible.py tests docs/assets
-          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38136699002 --jq .conclusion)" = success
-          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38136699002 --jq .head_sha)" = 36bab13035e9fa53760f817407925fd0ebd95dbb
-          gh release view blue-bird-adaptive-check --repo "$GITHUB_REPOSITORY" --json body --jq .body | grep -F '36bab13035e9fa53760f817407925fd0ebd95dbb'
+          git merge-base --is-ancestor fd8351b286215d76eb74654903a1390be92bfd0c HEAD
+          git diff --exit-code fd8351b286215d76eb74654903a1390be92bfd0c HEAD -- build_piko.py piko-overrides piko-patches translations compatibility build_compatible.py tests docs/assets
+          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38138171941 --jq .conclusion)" = success
+          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38138171941 --jq .head_sha)" = fd8351b286215d76eb74654903a1390be92bfd0c
+          gh release view blue-bird-adaptive-check --repo "$GITHUB_REPOSITORY" --json body --jq .body | grep -F 'fd8351b286215d76eb74654903a1390be92bfd0c'
           mkdir bins
           gh api "repos/$GITHUB_REPOSITORY/releases/tags/blue-bird-adaptive-check" > /tmp/candidate-release.json
           python - <<'PY'
           import json, os, subprocess
           from pathlib import Path
           release = json.loads(Path('/tmp/candidate-release.json').read_text())
+          expected_names = {'compatibility-bundles.json', 'patches-current-a2066288b6d2f095d9a7ab81c735fd254cdb7dea8bf646d242ff81d28be0124a.mpp', 'patches-current.mpp', 'patches-bundle.json', 'patches-legacy.mpp', 'supported-versions.json', 'patches.mpp', 'patches-legacy-c7be9db603fcefa4d3de3bbdc988b496504a08d2bc2e453d729b59cbe90c148c.mpp'}
+          assert expected_names <= {asset['name'] for asset in release['assets']}
           for asset in release['assets']:
               name = asset['name']
-              if not name.endswith(('.mpp', '.json')): continue
+              if name not in expected_names: continue
               assert Path(name).name == name
               with (Path('bins') / name).open('wb') as output:
                   subprocess.run(['gh', 'api', f"repos/{os.environ['GITHUB_REPOSITORY']}/releases/assets/{asset['id']}",
@@ -43,7 +45,8 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           import hashlib, json, os
-          checksums = {'compatibility-bundles.json': '84d5c26a17450ba7b415497e2fe7e160b5cd4028784ab70eb5b48c1c401dd332', 'patches-bundle.json': 'd09961b8109d7baff18eebdf9a890ea8ffc7ff28173695062f7331fed2c69402', 'patches-current-282013734067983e62f18c3c5adfdd4e9d8c808427980a85f789c01b150d476a.mpp': '282013734067983e62f18c3c5adfdd4e9d8c808427980a85f789c01b150d476a', 'patches-current.mpp': '282013734067983e62f18c3c5adfdd4e9d8c808427980a85f789c01b150d476a', 'patches-legacy-828c7b596d1fdd22523ca72408969defa6c4db31d77999624ada981d52f41680.mpp': '828c7b596d1fdd22523ca72408969defa6c4db31d77999624ada981d52f41680', 'patches-legacy.mpp': '828c7b596d1fdd22523ca72408969defa6c4db31d77999624ada981d52f41680', 'patches.mpp': 'b6f0a0e0dbbfb6013b69ab4b3a79c48da33f7f476f100dbcad3f84f6959beb99', 'supported-versions.json': '31e606bdfa4de75ef878664b0fe9817703fc11a0b071928a23546bafb24bb589'}
+          checksums = {'compatibility-bundles.json': 'd5867bb6e07fc2e04d380fcdd869247d9c481cfe6a66f59ce7956ece3c206358', 'patches-bundle.json': 'c9022a0d482e9fbf48d534a2d588b7f7e67621424e6410879df3fa1433b5b4f8', 'patches-current.mpp': 'a2066288b6d2f095d9a7ab81c735fd254cdb7dea8bf646d242ff81d28be0124a', 'patches-legacy.mpp': 'c7be9db603fcefa4d3de3bbdc988b496504a08d2bc2e453d729b59cbe90c148c', 'patches.mpp': 'df3dbec3d329fb3b02b0d5c750e31548d46c4909ce1c528deb4e8cc378d2bd54', 'supported-versions.json': '31e606bdfa4de75ef878664b0fe9817703fc11a0b071928a23546bafb24bb589', 'patches-current-a2066288b6d2f095d9a7ab81c735fd254cdb7dea8bf646d242ff81d28be0124a.mpp': 'a2066288b6d2f095d9a7ab81c735fd254cdb7dea8bf646d242ff81d28be0124a', 'patches-legacy-c7be9db603fcefa4d3de3bbdc988b496504a08d2bc2e453d729b59cbe90c148c.mpp': 'c7be9db603fcefa4d3de3bbdc988b496504a08d2bc2e453d729b59cbe90c148c'}
+          assert {path.name for path in Path('bins').iterdir()} == set(checksums)
           for name, expected in checksums.items():
               actual = hashlib.sha256((Path('bins') / name).read_bytes()).hexdigest()
               assert actual == expected, f'{name}: expected {expected}, got {actual}'
@@ -73,7 +76,7 @@ jobs:
         run: |
           gh release upload v3.54.2 bins/*.mpp bins/supported-versions.json compatibility-bundles.json --repo "$GITHUB_REPOSITORY" --clobber
           gh release edit v3.54.2 --repo "$GITHUB_REPOSITORY" --latest --title 'Piko 3.54.2' \
-            --notes '修复经典图标导致的修补失败：ARSCLib 将独立 values 文件名解析成错误资源类型，报 Undefined entry name。背景改用完整纯蓝 drawable，保留官方 SVG 矢量、系统自适应轮廓、经典选项和经典图标确认标题。两套实现构建、15 个版本选择映射与真实 ARSCLib 资源编码检查通过，旧错误已复现并覆盖回归检查。后续自动发布已接入同一编码检查。保留统一源、上游版本 3.54.2 和当前显示文字命名。未进行手机运行实测。构建源：36bab13035e9fa53760f817407925fd0ebd95dbb。'
+            --notes '图标选择页与确认页统一采用更饱满的圆角方形预览：圆角为边长的 25%，72dp 预览使用 18dp 圆角，96dp 确认预览使用 24dp 圆角。原图标选项改名为默认，对应确认页标题和说明同步更新；经典和经典图标名称保留。维持官方 SVG、统一源、上游版本 3.54.2 与 15 个兼容版本。两套实现构建、选择映射与 ARSCLib 资源编码检查通过。本次预览显示仍需手机确认。构建源：fd8351b286215d76eb74654903a1390be92bfd0c。'
       - name: Commit verified metadata
         run: |
           git config user.name 'github-actions[bot]'
