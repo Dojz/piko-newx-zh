@@ -52,5 +52,17 @@
     "download_url": "https://github.com/Dojz/piko-newx-zh/releases/download/v3.54.2/patches-current-56c80e299b6df7e644a4a38d352fbfc9c3489d68311104b8a719589cf5d92b31.mpp",
     "sha256": "56c80e299b6df7e644a4a38d352fbfc9c3489d68311104b8a719589cf5d92b31",
     "piko_commit": "9abde9777d92af50fe1a53634262498fb630d7d3"
+  },
+  {
+    "version": "v3.54.2",
+    "download_url": "https://github.com/Dojz/piko-newx-zh/releases/download/v3.54.2/patches-legacy-ed7500c8bef4e8d6dc96ed4da40d53156c2cae7fec854e1a08dfc7bf25a07a19.mpp",
+    "sha256": "ed7500c8bef4e8d6dc96ed4da40d53156c2cae7fec854e1a08dfc7bf25a07a19",
+    "piko_commit": "a3939be95cd27dd9cf72e25afea32285bd7e80ac"
+  },
+  {
+    "version": "v3.54.2",
+    "download_url": "https://github.com/Dojz/piko-newx-zh/releases/download/v3.54.2/patches-current-36a9583da36c0eaba4e4cfd4d8e3f12a2d5352f25c2b4bc26d352cd47201c282.mpp",
+    "sha256": "36a9583da36c0eaba4e4cfd4d8e3f12a2d5352f25c2b4bc26d352cd47201c282",
+    "piko_commit": "9abde9777d92af50fe1a53634262498fb630d7d3"
   }
 ]

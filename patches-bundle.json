@@ -1,8 +1,8 @@
 {
   "version": "v3.54.2",
   "download_url": "https://github.com/Dojz/piko-newx-zh/releases/download/v3.54.2/patches.mpp",
-  "created_at": "2026-10-10T15:49:48",
-  "description": "Piko 简体中文统一补丁：版本跟随上游，保留闪退修复、旧版本兼容和上游默认下载命名。",
+  "created_at": "2026-10-11T03:44:02",
+  "description": "Piko 简体中文统一补丁：按当前显示文字命名，外观中切换经典蓝鸟图标与启动页，保留旧版本兼容。",
   "app_version": "12.30.0-prod.01",
   "piko_commit": "9abde9777d92af50fe1a53634262498fb630d7d3",
   "upstream_version": "v3.54.2",
