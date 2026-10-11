@@ -14,8 +14,9 @@ streams. Mixed selection or applying another implementation to an already
 modified input can still merge conflicting classes when manager compatibility
 checks are bypassed. The available APK does not distinguish those two inputs.
 
-The extension dependency now enforces its centralized compatibility targets at
-patch execution, independently of manager selection. It fails instead of
+The extension dependency now enforces its centralized compatibility targets and
+rejects an application initializer with previously injected NewX settings calls,
+independently of manager selection. It fails instead of
 producing a runnable APK with an incompatible extension implementation. This is
 validation of the existing support allowlist, not version-based hook routing.
 Both implementation builds include a regression for selecting the other
