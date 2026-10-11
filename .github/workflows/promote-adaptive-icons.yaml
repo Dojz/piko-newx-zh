@@ -1,0 +1,87 @@
+name: Promote verified Classic vector icons
+on:
+  push:
+    branches: [codex/adaptive-blue-bird]
+    paths: [.github/workflows/promote-adaptive-icons.yaml]
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: piko-newx-zh-release
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify candidate provenance and download built bundles
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor 7bd2efe2df952086424e3e9ed3cf6ddaf642eda3 HEAD
+          git diff --exit-code 7bd2efe2df952086424e3e9ed3cf6ddaf642eda3 HEAD -- build_piko.py piko-overrides piko-patches translations compatibility build_compatible.py tests docs/assets
+          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38126650849 --jq .conclusion)" = success
+          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38126650849 --jq .head_sha)" = 7bd2efe2df952086424e3e9ed3cf6ddaf642eda3
+          gh release view blue-bird-adaptive-check --repo "$GITHUB_REPOSITORY" --json body --jq .body | grep -F '7bd2efe2df952086424e3e9ed3cf6ddaf642eda3'
+          mkdir bins
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/blue-bird-adaptive-check" > /tmp/candidate-release.json
+          python - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+          release = json.loads(Path('/tmp/candidate-release.json').read_text())
+          for asset in release['assets']:
+              name = asset['name']
+              if not name.endswith(('.mpp', '.json')): continue
+              assert Path(name).name == name
+              with (Path('bins') / name).open('wb') as output:
+                  subprocess.run(['gh', 'api', f"repos/{os.environ['GITHUB_REPOSITORY']}/releases/assets/{asset['id']}",
+                                  '-H', 'Accept: application/octet-stream'], stdout=output, check=True)
+          PY
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os
+          checksums = {'compatibility-bundles.json': '734aaf343f1c08a67ababa8f8f123955fe7a3769b8311de5cab7806f4bbb37c0', 'patches-bundle.json': '5c0659496fbf5e4dc26a0f1c77c33b3efe8dce5c1906861c67dba79eda7cfc2e', 'patches-current.mpp': '4f90e5670334c036ea0e85d541d5e92f51193b1f2393cf00e15e161d676fe401', 'patches-legacy.mpp': '63c0c8d431f22630b88c83a1bf3b8da2b0cae0cdadca7318b94b0bdba0af783d', 'patches.mpp': '0ea2a1d285937bdd497d26070c62a49d10a10f9988be106bf312ffd02d80a5a6', 'supported-versions.json': '31e606bdfa4de75ef878664b0fe9817703fc11a0b071928a23546bafb24bb589', 'patches-current-4f90e5670334c036ea0e85d541d5e92f51193b1f2393cf00e15e161d676fe401.mpp': '4f90e5670334c036ea0e85d541d5e92f51193b1f2393cf00e15e161d676fe401', 'patches-legacy-63c0c8d431f22630b88c83a1bf3b8da2b0cae0cdadca7318b94b0bdba0af783d.mpp': '63c0c8d431f22630b88c83a1bf3b8da2b0cae0cdadca7318b94b0bdba0af783d'}
+          for name, expected in checksums.items():
+              actual = hashlib.sha256((Path('bins') / name).read_bytes()).hexdigest()
+              assert actual == expected, f'{name}: expected {expected}, got {actual}'
+          prefix = f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/releases/download/v3.54.2/"
+          history = json.loads(Path('bins/compatibility-bundles.json').read_text())
+          for entry in history:
+              # Historical releases may reuse the same basename; compare only this release's assets.
+              if not entry['download_url'].startswith(prefix): continue
+              name = entry['download_url'].rsplit('/', 1)[1]
+              path = Path('bins') / name
+              if path.exists(): assert hashlib.sha256(path.read_bytes()).hexdigest() == entry['sha256'], name
+          for name in ('patches-current.mpp', 'patches-legacy.mpp'):
+              checksum = checksums[name]
+              immutable = f'{Path(name).stem}-{checksum}.mpp'
+              assert any(entry['download_url'] == prefix + immutable and entry['sha256'] == checksum for entry in history)
+              assert hashlib.sha256((Path('bins') / immutable).read_bytes()).hexdigest() == checksum
+          metadata = json.loads(Path('bins/patches-bundle.json').read_text())
+          assert metadata['version'] == metadata['upstream_version'] == 'v3.54.2'
+          assert metadata['piko_commit'] == '9abde9777d92af50fe1a53634262498fb630d7d3'
+          assert len(metadata['supported_versions']) == 15
+          Path('patches-bundle.json').write_bytes(Path('bins/patches-bundle.json').read_bytes())
+          Path('compatibility-bundles.json').write_bytes(Path('bins/compatibility-bundles.json').read_bytes())
+          PY
+      - name: Update official-version release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload v3.54.2 bins/*.mpp bins/supported-versions.json compatibility-bundles.json --repo "$GITHUB_REPOSITORY" --clobber
+          gh release edit v3.54.2 --repo "$GITHUB_REPOSITORY" --latest --title 'Piko 3.54.2' \
+            --notes '经典图标采用 Twitter 官方 SVG 原始路径，转换成 Android 矢量前景和纯蓝背景，遵循与官方图标相同的系统自适应轮廓，避免白色底板内套小方块。图标预览、桌面和启动页使用标准矢量；选择页显示经典，再次确认页显示经典图标。保持统一源、上游版本 3.54.2 与 15 个兼容版本。两套实现构建、资源检查与选择映射检查通过；本次尚未进行最终 APK 或手机显示实测。构建源：7bd2efe2df952086424e3e9ed3cf6ddaf642eda3。'
+      - name: Commit verified metadata
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add patches-bundle.json compatibility-bundles.json
+          git commit -m 'Update verified Classic icon bundle metadata [skip ci]'
+          git push origin HEAD:codex/adaptive-blue-bird
+      - name: Remove temporary validation release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release delete blue-bird-adaptive-check --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes
