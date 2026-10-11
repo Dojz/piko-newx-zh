@@ -53,3 +53,6 @@ or rounded corners; Android's adaptive mask remains responsible for the shape.
 An ARSCLib resource-only fixture reproduces the old failure and compiles the
 fixed background, official foreground, splash and API 26/33 adaptive variants.
 It uses no user APK or private attachment in CI.
+
+Regular automatic releases also run the same resource encoding fixture
+before publication whenever `PIKO_VALIDATE=1`, as set by the release workflow.

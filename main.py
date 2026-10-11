@@ -1,9 +1,12 @@
 from argparse import ArgumentParser
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import re
 import shutil
+import subprocess
+import sys
 
 import github
 from build_piko import PikoBuild, build_piko_patches
@@ -232,6 +235,12 @@ def process(
         Path(PATCHES_CURRENT_MPP), Path(PATCHES_MPP),
         release_tag.removeprefix("v"), Path("bins/morphe-cli.jar"),
     )
+    if os.environ.get("PIKO_VALIDATE") == "1":
+        # Compile maintained launcher layers with ARSCLib before publishing any release asset.
+        subprocess.run([
+            sys.executable, str(Path(__file__).resolve().parent / "tests/check_launcher_resource_encoding.py"),
+            "bins/morphe-cli.jar",
+        ], check=True)
     Path(SUPPORTED_VERSIONS).write_text(
         json.dumps(sorted(supported_versions, key=app_version_sort_key), indent=2) + "\n"
     )
