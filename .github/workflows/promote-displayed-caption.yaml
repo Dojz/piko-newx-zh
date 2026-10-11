@@ -41,15 +41,24 @@ jobs:
           PY
           python - <<'PY'
           from pathlib import Path
-          import hashlib, json
+          import hashlib, json, os
           checksums = {'compatibility-bundles.json': '35c72c7886c741e59f97fe2c7309f86604f3f5d50f633901b24d595e648750ae', 'patches-bundle.json': '9039d43297ffde0cdef2701649a2072f2e9176d23a79760835622da1ccf5bee4', 'patches-current.mpp': '36a9583da36c0eaba4e4cfd4d8e3f12a2d5352f25c2b4bc26d352cd47201c282', 'patches-legacy.mpp': 'ed7500c8bef4e8d6dc96ed4da40d53156c2cae7fec854e1a08dfc7bf25a07a19', 'patches.mpp': '4830bd66a38a8fc20e42f222b6648e0f3a2be67f525e64c317c5c020d9231427', 'supported-versions.json': '31e606bdfa4de75ef878664b0fe9817703fc11a0b071928a23546bafb24bb589'}
           for name, expected in checksums.items():
               actual = hashlib.sha256((Path('bins') / name).read_bytes()).hexdigest()
               assert actual == expected, f'{name}: expected {expected}, got {actual}'
-          for entry in json.loads(Path('bins/compatibility-bundles.json').read_text()):
+          prefix = f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/releases/download/v3.54.2/"
+          history = json.loads(Path('bins/compatibility-bundles.json').read_text())
+          for entry in history:
+              # Historical releases may reuse the same basename; compare only this release's assets.
+              if not entry['download_url'].startswith(prefix): continue
               name = entry['download_url'].rsplit('/', 1)[1]
               path = Path('bins') / name
               if path.exists(): assert hashlib.sha256(path.read_bytes()).hexdigest() == entry['sha256'], name
+          for name in ('patches-current.mpp', 'patches-legacy.mpp'):
+              checksum = checksums[name]
+              immutable = f'{Path(name).stem}-{checksum}.mpp'
+              assert any(entry['download_url'] == prefix + immutable and entry['sha256'] == checksum for entry in history)
+              assert hashlib.sha256((Path('bins') / immutable).read_bytes()).hexdigest() == checksum
           metadata = json.loads(Path('bins/patches-bundle.json').read_text())
           assert metadata['version'] == metadata['upstream_version'] == 'v3.54.2'
           assert metadata['piko_commit'] == '9abde9777d92af50fe1a53634262498fb630d7d3'
