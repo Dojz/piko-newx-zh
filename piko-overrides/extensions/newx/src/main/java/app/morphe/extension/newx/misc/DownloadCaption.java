@@ -13,7 +13,7 @@ public final class DownloadCaption {
 
     private static final class RenderedState {
         final WeakReference<Object> post;
-        final WeakReference<Object> state;
+        WeakReference<Object> state;
         RenderedState(Object post, Object state) {
             this.post = new WeakReference<>(post);
             this.state = new WeakReference<>(state);
@@ -23,14 +23,25 @@ public final class DownloadCaption {
     public static void record(Object post, Object state) {
         if (post == null) return;
         synchronized (STATES) {
+            RenderedState existing = null;
             Iterator<RenderedState> iterator = STATES.iterator();
             while (iterator.hasNext()) {
                 RenderedState previous = iterator.next();
                 Object owner = previous.post.get();
-                if (owner == null || owner == post || previous.state.get() == null) iterator.remove();
+                if (owner == post) {
+                    existing = previous;
+                    iterator.remove();
+                } else if (owner == null || previous.state.get() == null) {
+                    iterator.remove();
+                }
             }
             // A null state means original text; it must also clear any previous rendered translation.
-            if (state != null) STATES.addLast(new RenderedState(post, state));
+            if (state != null) {
+                if (existing == null) existing = new RenderedState(post, state);
+                else if (existing.state.get() != state) existing.state = new WeakReference<>(state);
+                // Recomposition with the same state creates no new record or weak references.
+                STATES.addLast(existing);
+            }
             while (STATES.size() > MAX_STATES) STATES.removeFirst();
         }
     }

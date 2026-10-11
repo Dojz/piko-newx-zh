@@ -1,5 +1,5 @@
 diff --git a/extensions/newx/src/main/java/app/morphe/extension/newx/misc/DownloadFileName.java b/extensions/newx/src/main/java/app/morphe/extension/newx/misc/DownloadFileName.java
-index 7dc8b0e9..03646016 100644
+index 7dc8b0e9..1f0bd45e 100644
 --- a/extensions/newx/src/main/java/app/morphe/extension/newx/misc/DownloadFileName.java
 +++ b/extensions/newx/src/main/java/app/morphe/extension/newx/misc/DownloadFileName.java
 @@ -2,6 +2,7 @@ package app.morphe.extension.newx.misc;
@@ -50,7 +50,7 @@ index 7dc8b0e9..03646016 100644
          public static PostContext from(Object post) {
 -            return fromText(post == null ? null : post.toString());
 +            PostContext context = fromText(post == null ? null : post.toString());
-+            context.text = DownloadCaption.displayedText(post, context.text);
++            context.text = captionForFileName(DownloadCaption.displayedText(post, context.text));
 +            return context;
          }
  
@@ -68,7 +68,7 @@ index 7dc8b0e9..03646016 100644
                      NewXUtils.rawSourceMediaField(postText, "sourceUserIdentifier"),
                      NewXUtils.rawSourceMediaField(postText, "sourceUserDisplayName")
              );
-+            context.text = postCaption(postText);
++            context.text = captionForFileName(postCaption(postText));
 +            return context;
          }
  
@@ -127,15 +127,27 @@ index 7dc8b0e9..03646016 100644
  
 -        String sanitized = value.trim().replaceFirst("^@", "")
 -                .replaceAll("[^A-Za-z0-9._-]+", "_")
-+        String sanitized = value.replaceAll("(?:\\R|\\t)+", " ").trim().replaceFirst("^@", "")
++        String sanitized = value.replaceAll("(?:\\R|\\t)++", " ").trim().replaceFirst("^@", "")
 +                .replaceAll("[\\p{Cntrl}\\p{Cf}<>:\"/\\\\|?*]+", "_")
                  // Separators are already gone, so a dot run cannot traverse; collapsing every
                  // punctuation run keeps the "no parent-directory component" property local too.
                  .replaceAll("[_.]{2,}", "_")
-@@ -370,6 +392,43 @@ public final class DownloadFileName {
+@@ -370,6 +392,55 @@ public final class DownloadFileName {
          return sanitized.isEmpty() ? fallback : sanitized;
      }
  
++    /** Keep only the safe, usable filename prefix while a download is queued. */
++    @Nullable
++    static String captionForFileName(@Nullable String text) {
++        if (text == null) return null;
++        // Keep token boundary whitespace/@/punctuation: the complete template is sanitized later.
++        String safe = text.replaceAll("(?:\\R|\\t)++", " ")
++                .replaceAll("[\\p{Cntrl}\\p{Cf}<>:\"/\\\\|?*]+", "_")
++                .replaceAll("[_.]{2,}", "_")
++                .replaceAll("_+", "_");
++        return truncate(safe, 240);
++    }
++
 +    static boolean usesCaption(String template) {
 +        return template != null && (template.contains("{" + TOKEN_TEXT + "}")
 +                || template.contains("{" + TOKEN_TRANSLATED_TEXT + "}"));
@@ -177,7 +189,7 @@ index 7dc8b0e9..03646016 100644
          return app.morphe.extension.shared.StringRef.str(name);
      }
 diff --git a/extensions/newx/src/main/java/app/morphe/extension/newx/misc/InlineDownloadButton.java b/extensions/newx/src/main/java/app/morphe/extension/newx/misc/InlineDownloadButton.java
-index 97f05988..de78d0fd 100644
+index 97f05988..f7dd7061 100644
 --- a/extensions/newx/src/main/java/app/morphe/extension/newx/misc/InlineDownloadButton.java
 +++ b/extensions/newx/src/main/java/app/morphe/extension/newx/misc/InlineDownloadButton.java
 @@ -296,7 +296,8 @@ public final class InlineDownloadButton {
@@ -185,7 +197,7 @@ index 97f05988..de78d0fd 100644
              Context applicationContext = context.getApplicationContext();
              Context safeContext = applicationContext != null ? applicationContext : context;
 -            CLICK_EXECUTOR.execute(() -> resolveAndPresent(safeContext, post, longPress));
-+            String displayedCaption = DownloadCaption.displayedText(post, null);
++            String displayedCaption = DownloadFileName.captionForFileName(DownloadCaption.displayedText(post, null));
 +            CLICK_EXECUTOR.execute(() -> resolveAndPresent(safeContext, post, longPress, displayedCaption));
              return true;
          } catch (RuntimeException exception) {

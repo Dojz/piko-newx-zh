@@ -35,9 +35,18 @@ public class CaptionCheck {
   DownloadCaption.record(selected,hidden);equal("原文",DownloadCaption.displayedText(selected,"原文"));
   equal("屏幕译文",snapshot);equal("其他窗口",DownloadCaption.displayedText(otherView,"original"));
   DownloadCaption.record(selected,null);equal("同语言原文",DownloadCaption.displayedText(selected,"同语言原文"));
+  var field=DownloadCaption.class.getDeclaredField("STATES");field.setAccessible(true);
+  DownloadCaption.record(selected,shown);
+  var records=(java.util.ArrayDeque<?>)field.get(null);Object reused=records.peekLast();
+  var stateField=reused.getClass().getDeclaredField("state");stateField.setAccessible(true);
+  Object reference=stateField.get(reused);
+  for(int i=0;i<1000;i++)DownloadCaption.record(selected,shown);
+  if(records.peekLast()!=reused||stateField.get(reused)!=reference)throw new AssertionError("Recomposition allocates duplicate records/references");
+  DownloadCaption.record(selected,hidden);
+  if(records.peekLast()!=reused||stateField.get(reused)==reference)throw new AssertionError("State update failed to reuse record");
+  equal("original",DownloadCaption.displayedText(selected,"original"));
   List<Object> posts=new ArrayList<>();List<State> states=new ArrayList<>();
   for(int i=0;i<400;i++){Object post=new Object();State state=new State(true,"unused");posts.add(post);states.add(state);DownloadCaption.record(post,state);}
-  var field=DownloadCaption.class.getDeclaredField("STATES");field.setAccessible(true);
   if(((Collection<?>)field.get(null)).size()>256)throw new AssertionError("Unbounded observer");
   System.out.println("Displayed-caption checks passed: original, shown translation, hidden cache, toggled original, tap snapshot, separate views, no eager reads, bounded weak state");
  }

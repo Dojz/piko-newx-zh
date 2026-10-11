@@ -57,6 +57,17 @@ public class FilenameCheck {
   post.text="中文🙂\n".repeat(100);
   String filename=DownloadFileName.render("{translatedText}",post,0,1,"jpg");
   if(filename.getBytes(StandardCharsets.UTF_8).length>240||!filename.endsWith(".jpg")||filename.contains("\n"))throw new AssertionError(filename);
+  for(String body:new String[]{"中文🙂\n".repeat(10000), "plain text ".repeat(10000), "\n\t".repeat(10000)+"短文"}){
+   String bounded=DownloadFileName.captionForFileName(body);
+   if(bounded==null||bounded.getBytes(StandardCharsets.UTF_8).length>240)throw new AssertionError("Unbounded queued caption");
+   post.text=body;
+   String before=DownloadFileName.render("{screenName}_{text}",post,0,1,"jpg");
+   post.text=bounded;
+   equal(before,DownloadFileName.render("{screenName}_{text}",post,0,1,"jpg"));
+   equal(bounded,DownloadFileName.PostContext.fromText("Post(id=1, text="+body+", timestamp=0)").text);
+  }
+  equal(null,DownloadFileName.captionForFileName(null));
+  equal(" ",DownloadFileName.captionForFileName("\n\t"));
   post.clearCaption();
   if(post.text!=null)throw new AssertionError("Caption retained after naming");
   System.out.println("Filename checks passed: original/translated captions, CR/LF/CRLF, tabs, Unicode line breaks, spaces, unsafe characters, media index and UTF-8 limit");
