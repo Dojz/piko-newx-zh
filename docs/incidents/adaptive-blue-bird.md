@@ -68,3 +68,7 @@ confirmation centers a fixed square preview inside its padded body, so the
 outline follows the icon rather than the full width of the dialog. The same
 helper handles Classic and Original, retains their labels and click actions,
 and clips the loaded drawables at display time.
+
+The original icon choice is now labelled 默认 (Default), including its
+confirmation title and the chooser summary. Classic remains 经典 and its
+confirmation title remains 经典图标.

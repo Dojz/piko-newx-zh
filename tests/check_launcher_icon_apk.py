@@ -62,7 +62,8 @@ def check(path):
                 assert paths[0].get(ANDROID + "fillColor").lower() == "#ffffffff"
                 assert "".join(paths[0].get(ANDROID + "pathData").split()) == "".join(official_path.split()), "Official SVG path changed"
     for name, expected in (("piko_newx_app_icon_blue_bird", "经典"),
-                           ("piko_newx_app_icon_classic_title", "经典图标")):
+                           ("piko_newx_app_icon_classic_title", "经典图标"),
+                           ("piko_newx_app_icon_original", "默认")):
         string_id = resources.get_res_id_by_key(apk.get_package(), "string", name)
         assert string_id and expected in [v for _, v in resources.get_resolved_res_configs(string_id)], name
     print("PASS: adaptive icon/roundIcon, full-bleed blue background, official SVG vector foreground, themed silhouette and Classic labels")

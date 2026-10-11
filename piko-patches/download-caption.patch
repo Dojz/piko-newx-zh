@@ -376,12 +376,12 @@ index 60bb7e82..04c174ca 100644
      <string name="piko_newx_settings_search_no_results">No results for \"%s\"</string>
  
 +    <string name="piko_newx_app_icon_title">App icon</string>
-+    <string name="piko_newx_app_icon_summary">Choose the classic or the original icon and splash screen</string>
++    <string name="piko_newx_app_icon_summary">Choose the classic or the default icon and splash screen</string>
 +    <string name="piko_newx_app_icon_choose_title">Choose app icon</string>
 +    <string name="piko_newx_app_icon_choose_summary">Preview and switch the app icon and splash screen</string>
 +    <string name="piko_newx_app_icon_blue_bird">Classic</string>
 +    <string name="piko_newx_app_icon_classic_title">Classic icon</string>
-+    <string name="piko_newx_app_icon_original">Original icon</string>
++    <string name="piko_newx_app_icon_original">Default</string>
 +    <string name="piko_newx_app_icon_confirm_summary">Apply this icon and splash screen? The launcher may take a moment to refresh.</string>
 +    <string name="piko_newx_app_icon_confirm">Confirm</string>
 +    <string name="piko_newx_app_icon_changed">App icon changed</string>
