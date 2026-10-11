@@ -56,3 +56,15 @@ It uses no user APK or private attachment in CI.
 
 Regular automatic releases also run the same resource encoding fixture
 before publication whenever `PIKO_VALIDATE=1`, as set by the release workflow.
+
+## In-app preview corner refinement
+
+After the encoder fix the user reported that the patch basically works, but
+the chooser's two icon previews still have near-square corners. The device's
+adaptive icon mask is shallow even for the original X icon. Both in-app
+previews now use an ImageView outline with radius 25% of the square's edge:
+18dp at the chooser's 72dp size, 24dp at the confirmation's 96dp size. The
+confirmation centers a fixed square preview inside its padded body, so the
+outline follows the icon rather than the full width of the dialog. The same
+helper handles Classic and Original, retains their labels and click actions,
+and clips the loaded drawables at display time.

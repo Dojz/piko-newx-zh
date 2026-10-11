@@ -17,3 +17,4 @@ jobs:
             gh release create blue-bird-adaptive-check --repo "$GITHUB_REPOSITORY" --target main \
               --prerelease --latest=false --title 'Classic vector icon validation'
 # Recreate the temporary endpoint for the ARSCLib background fix.
+# Recreate the temporary endpoint for matching rounded icon previews.

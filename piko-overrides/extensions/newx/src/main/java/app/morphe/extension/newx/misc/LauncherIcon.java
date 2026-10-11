@@ -6,8 +6,11 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Outline;
 import android.graphics.drawable.Drawable;
 import android.view.Gravity;
+import android.view.View;
+import android.view.ViewOutlineProvider;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
@@ -61,11 +64,8 @@ public final class LauncherIcon {
         cell.setGravity(Gravity.CENTER);
         PackageManager manager = activity.getPackageManager();
         Drawable icon = manager.getActivityInfo(component, PackageManager.MATCH_DISABLED_COMPONENTS).loadIcon(manager);
-        ImageView preview = new ImageView(activity);
-        preview.setImageDrawable(icon);
-        preview.setContentDescription(label);
-        int size = PikoTheme.dpToPx(activity, 72f);
-        cell.addView(preview, new LinearLayout.LayoutParams(size, size));
+        ImageView preview = iconPreview(activity, icon, label, 72f);
+        cell.addView(preview);
         ButtonView choose = new ButtonView(activity, ButtonView.ButtonStyle.TEXT, label);
         choose.setOnClickListener(ignored -> {
             chooser.dismiss();
@@ -76,19 +76,36 @@ public final class LauncherIcon {
         body.addView(cell, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
     }
 
+    /** Use the same generous rounded-square preview in both dialogs, at any density. */
+    private static ImageView iconPreview(Activity activity, Drawable icon, String label, float sizeDp) {
+        ImageView preview = new ImageView(activity);
+        preview.setImageDrawable(icon);
+        preview.setContentDescription(label);
+        preview.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        int size = PikoTheme.dpToPx(activity, sizeDp);
+        preview.setLayoutParams(new LinearLayout.LayoutParams(size, size));
+        preview.setOutlineProvider(new ViewOutlineProvider() {
+            @Override public void getOutline(View view, Outline outline) {
+                int width = view.getWidth();
+                int height = view.getHeight();
+                outline.setRoundRect(0, 0, width, height, Math.min(width, height) * 0.25f);
+            }
+        });
+        preview.setClipToOutline(true);
+        return preview;
+    }
+
     private static void confirm(Activity activity, ComponentName component, String label, Drawable icon) {
         String title = component.getClassName().equals(PREFIX + "BlueBird")
                 ? str("piko_newx_app_icon_classic_title") : label;
         DialogView dialog = new DialogView(activity).setTitle(title)
                 .setSubtitle(str("piko_newx_app_icon_confirm_summary"));
-        ImageView preview = new ImageView(activity);
-        preview.setImageDrawable(icon);
-        preview.setContentDescription(label);
+        LinearLayout body = new LinearLayout(activity);
+        body.setGravity(Gravity.CENTER);
         int padding = PikoTheme.dpToPx(activity, 24f);
-        preview.setPadding(padding, padding, padding, padding);
-        preview.setAdjustViewBounds(true);
-        preview.setMaxHeight(PikoTheme.dpToPx(activity, 144f));
-        dialog.setBodyView(preview);
+        body.setPadding(padding, padding, padding, padding);
+        body.addView(iconPreview(activity, icon, label, 96f));
+        dialog.setBodyView(body);
         ButtonView cancel = new ButtonView(activity, ButtonView.ButtonStyle.TEXT, str("piko_newx_settings_cancel"));
         cancel.setOnClickListener(ignored -> dialog.dismiss());
         ButtonView apply = new ButtonView(activity, ButtonView.ButtonStyle.FILLED, str("piko_newx_app_icon_confirm"));
