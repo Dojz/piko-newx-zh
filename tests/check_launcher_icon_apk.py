@@ -1,6 +1,6 @@
 """Catch the realme white fallback plate / small square blue-bird regression.
 
-Final APK integration check (optional androguard and Pillow dependencies):
+Final APK integration check (optional androguard dependency):
 python tests/check_launcher_icon_apk.py patched.apk
 """
 import sys
@@ -36,9 +36,15 @@ def check(path):
             root = AXMLPrinter(files.read(file)).get_xml_obj()
             assert root.tag == "adaptive-icon", "OEM launcher would normalize a legacy bitmap into a plate"
             layers = {node.tag: node.get(ANDROID + "drawable") for node in root}
-            color_id = int(layers["background"].removeprefix("@"), 16)
-            colors = resources.get_resolved_res_configs(color_id)
-            assert colors and all(value.lower() == "#ff1da1f2" for _, value in colors), colors
+            background_id = int(layers["background"].removeprefix("@"), 16)
+            backgrounds = resources.get_resolved_res_configs(background_id)
+            assert backgrounds, "Missing full-bleed drawable background"
+            for _, background in backgrounds:
+                shape = AXMLPrinter(files.read(background)).get_xml_obj()
+                assert shape.tag == "shape"
+                assert shape.get(ANDROID + "shape", "rectangle") in ("rectangle", "0")
+                assert len(shape) == 1 and shape[0].tag == "solid", "Background must have no inset or rounding"
+                assert shape[0].get(ANDROID + "color").lower() == "#ff1da1f2"
             if api >= 33:
                 assert layers.get("monochrome") == layers["foreground"], "Themed icons need the bird silhouette"
             foreground_id = int(layers["foreground"].removeprefix("@"), 16)

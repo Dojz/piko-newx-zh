@@ -83,6 +83,10 @@ jobs:
               path = Path('bins') / name
               print(f'{name}: {path.stat().st_size} bytes, sha256={digest(path)}')
           PY
+      - name: Check launcher resources with the manager resource encoder
+        run: |
+          python -m pip install JPype1==1.7.1
+          python tests/check_launcher_resource_encoding.py bins/morphe-cli.jar bins/patches.mpp
       - name: Publish validation bundle
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

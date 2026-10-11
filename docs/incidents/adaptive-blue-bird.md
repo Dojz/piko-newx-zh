@@ -35,3 +35,21 @@ resources keep its path unchanged and apply only a uniform scale/translation.
 The foreground uses a 108dp adaptive canvas with a 44dp-wide logo, centered in the
 safe area. The startup drawable reuses the same path on its existing 288-unit
 canvas. Copyright Twitter; Apache-2.0 source license retained beside the SVG.
+
+## ARSCLib full-encode failure after the vector release
+
+Manager 1.34.0 / patcher 1.15.1 selected the correct 41 recommended patches
+for 12.28.0-prod.01, but the full resource rebuild failed on
+`res/values/piko_launcher_blue_bird_colors.xml`. ARSCLib derives a values file's
+resource type from its basename; this file was treated as
+`piko_launcher_blue_bird_color`, rather than `color`. The color itself had a
+valid public color ID, so merely allocating another ID would not fix the wrong
+type lookup. Prior bundle-only vector checks did not exercise that encoder.
+
+The launcher background is now a solid rectangle drawable with the literal
+Twitter blue color. Both adaptive variants reference that drawable, avoiding
+the incorrectly named values file. The background has no padding, inset, size
+or rounded corners; Android's adaptive mask remains responsible for the shape.
+An ARSCLib resource-only fixture reproduces the old failure and compiles the
+fixed background, official foreground, splash and API 26/33 adaptive variants.
+It uses no user APK or private attachment in CI.

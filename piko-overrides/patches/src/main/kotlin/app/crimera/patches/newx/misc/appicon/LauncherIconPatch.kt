@@ -30,7 +30,7 @@ internal val newXLauncherIconResources = resourcePatch {
         // Keep the official SVG bird as a VectorDrawable at every display size.
         // Android applies the native adaptive mask to a full-bleed blue background.
         copyResources("newx/launcher", ResourceGroup("drawable",
-            "piko_launcher_classic_foreground.xml", "piko_classic_splash.xml"))
+            "piko_launcher_classic_background.xml", "piko_launcher_classic_foreground.xml", "piko_classic_splash.xml"))
         // Older launchers retain the upstream bitmap fallback; API 26+ selects anydpi XML.
         for (density in listOf("mdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi")) {
             val folder = "mipmap-$density"
@@ -38,8 +38,6 @@ internal val newXLauncherIconResources = resourcePatch {
             val icons = get("res").resolve(folder)
             icons.resolve("ic_launcher_twitter.webp").copyTo(icons.resolve("piko_launcher_blue_bird.webp"), overwrite = true)
         }
-        get("res").resolve("values").resolve("piko_launcher_blue_bird_colors.xml").writeText(
-            """<resources><color name="piko_launcher_blue_bird_background">#ff1da1f2</color></resources>""")
         for (api in listOf(26, 33)) {
             val folder = get("res").resolve("mipmap-anydpi-v$api")
             folder.mkdirs()
@@ -47,7 +45,7 @@ internal val newXLauncherIconResources = resourcePatch {
                 """<monochrome android:drawable="@drawable/piko_launcher_classic_foreground"/>""" else ""
             folder.resolve("piko_launcher_blue_bird.xml").writeText(
                 """<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-                    <background android:drawable="@color/piko_launcher_blue_bird_background"/>
+                    <background android:drawable="@drawable/piko_launcher_classic_background"/>
                     <foreground android:drawable="@drawable/piko_launcher_classic_foreground"/>
                     $monochrome
                 </adaptive-icon>""")
