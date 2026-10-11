@@ -1,0 +1,79 @@
+name: Verify unified NewX manager selection
+on:
+  push:
+    branches: [codex/manager-stable-patch-names]
+    paths:
+      - .github/workflows/unified-selection.yaml
+      - build_compatible.py
+      - compatibility/**
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: piko-newx-zh-release
+  cancel-in-progress: false
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: "21"
+      - name: Reassemble verified implementations with stable selection names
+        run: |
+          python - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+          from build_compatible import assemble_compatible_bundle, digest, fetch
+          repo = os.environ['GITHUB_REPOSITORY']
+          prefix = f'https://github.com/{repo}/releases/download/v3.54.2/'
+          Path('build-inputs').mkdir()
+          Path('bins').mkdir()
+          inputs = (
+              ('patches-current', 'e20c91a9d9f1091b4d9844a6a64f28ac0b2ea86f366679c764d5d3f02443695f'),
+              ('patches-legacy', 'a736bff2a0f75f32794526410f2763aa29b1c0e941818766948494729315a2d3'),
+          )
+          history_path = Path('compatibility-bundles.json')
+          history_bytes = history_path.read_bytes()
+          history = json.loads(history_bytes)
+          for stem, checksum in inputs:
+              entry = next(e for e in history if e['download_url'] == prefix + f'{stem}-{checksum}.mpp')
+              assert entry['sha256'] == checksum
+              path = Path('build-inputs') / f'{stem}.mpp'
+              fetch(entry['download_url'], path, checksum)
+              history.append(dict(entry, download_url=path.resolve().as_uri()))
+          history_path.write_text(json.dumps(history))
+          cli = Path('build-inputs/morphe-cli.jar')
+          fetch('https://github.com/MorpheApp/morphe-desktop/releases/download/v1.18.1/morphe-desktop-1.18.1-all.jar',
+                cli, '1b506ab5f03d16a2f65026d5e0e1910d01fc1e2152f21eaeb44ed2f30856597b')
+          try:
+              versions = assemble_compatible_bundle(Path('build-inputs/patches-current.mpp'),
+                  Path('bins/patches.mpp'), '3.54.2', cli)
+          finally:
+              history_path.write_bytes(history_bytes)
+          metadata_path = Path('patches-bundle.json')
+          metadata = json.loads(metadata_path.read_text())
+          assert set(metadata['supported_versions']) == versions and len(versions) == 15
+          assert metadata['version'] == metadata['upstream_version'] == 'v3.54.2'
+          metadata.update(created_at=datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S'),
+              description='Piko 简体中文统一补丁：稳定区分新旧补丁选择，按当前显示文字命名，蓝鸟图标与启动页，保留旧版本兼容。')
+          metadata_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + '\n')
+          Path('bins/supported-versions.json').write_text(json.dumps(sorted(versions), indent=2) + '\n')
+          print('Unified MPP sha256=' + digest(Path('bins/patches.mpp')))
+          PY
+      - name: Publish validation bundle
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view unified-selection-check --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create unified-selection-check --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --prerelease --latest=false --title 'Unified manager selection validation'
+          gh release upload unified-selection-check bins/patches.mpp bins/supported-versions.json \
+            patches-bundle.json --repo "$GITHUB_REPOSITORY" --clobber
+          gh release edit unified-selection-check --repo "$GITHUB_REPOSITORY" --prerelease --latest=false \
+            --notes "Validation source: $GITHUB_SHA; one unified MPP, stable retained selection names, version 3.54.2."

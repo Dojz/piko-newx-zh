@@ -62,6 +62,16 @@ def targets(checker: list[str], bundle: Path, required: set[str] | None = None) 
     return set(re.findall(r"^([^\s:]+): \d+$", output, re.MULTILINE))
 
 
+def compatibility_label(versions: set[str]) -> str:
+    """Stable selection names across rebuilds, independent of bundle hashes/order."""
+    if not versions:
+        raise ValueError("A retained NewX implementation must declare app targets")
+    ordered = sorted(versions, key=lambda value: tuple(
+        int(part) if part.isdigit() else part for part in re.split(r"(\d+)", value)
+    ))
+    return ordered[0] if len(ordered) == 1 else f"{ordered[0]}..{ordered[-1]}"
+
+
 def assemble_compatible_bundle(
     current: Path, output: Path, version: str, cli: Path,
 ) -> set[str]:
@@ -90,8 +100,17 @@ def assemble_compatible_bundle(
             relocated = directory / f"{entry['sha256']}.jar"
             run([
                 *relocator, str(bundle), str(relocated), "h" + entry["sha256"][:12],
+                compatibility_label(supported),
                 *sorted(supported & covered),
             ])
+            rebuilt = directory / f"{entry['sha256']}-selection-check.jar"
+            run([
+                *relocator, str(bundle), str(rebuilt), "rebuild" + entry["sha256"][:12],
+                compatibility_label(supported),
+                *sorted(supported & covered),
+            ])
+            print(run([*checker[:-1], "VerifyManagerSelection", "--same-names",
+                       str(relocated), str(rebuilt)]), end="")
             inputs.append(relocated)
             covered |= supported
         combined = directory / "combined.jar"
@@ -112,6 +131,7 @@ def assemble_compatible_bundle(
                         destination.writestr(name, data)
                         written.add(name)
         targets(checker, combined, covered)
+        print(run([*checker[:-1], "VerifyManagerSelection", str(combined), *sorted(covered)]), end="")
         dex = directory / "dex"
         dex.mkdir()
         process = subprocess.run([

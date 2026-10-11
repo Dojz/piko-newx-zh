@@ -16,8 +16,10 @@ import org.objectweb.asm.commons.Remapper;
 
 public final class RelocateBundle {
     public static void main(String[] args) throws Exception {
+        if (args.length < 4 || args[3].isBlank()) throw new IllegalArgumentException("A stable compatibility label is required");
         String prefix = "piko/compat/" + args[2] + "/";
-        Set<String> excluded = new HashSet<>(List.of(args).subList(3, args.length));
+        String selectionSuffix = " [" + args[3] + "]";
+        Set<String> excluded = new HashSet<>(List.of(args).subList(4, args.length));
         try (var input = new ZipFile(args[0]);
              var output = new ZipOutputStream(Files.newOutputStream(new File(args[1]).toPath()))) {
             Set<String> classes = new HashSet<>();
@@ -29,6 +31,10 @@ public final class RelocateBundle {
                 }
                 @Override public Object mapValue(Object value) {
                     if (!(value instanceof String text)) return super.mapValue(value);
+                    // Manager selections/options are keyed by name, not by compatible version.
+                    // A rebuild hash would change those keys on every update. Use the original
+                    // compatibility cohort instead; the current implementation keeps upstream names.
+                    if (text.startsWith("NewX: ")) return text + selectionSuffix;
                     for (String root : List.of("addresources", "extensions", "twitter")) {
                         if (text.equals(root) || text.startsWith(root + "/")) return prefix + text;
                     }

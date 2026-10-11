@@ -30,6 +30,19 @@ public final class VerifyBundle {
         }
         if (counts.isEmpty()) throw new IllegalStateException("No NewX patches loaded");
         counts.forEach((version, count) -> System.out.println(version + ": " + count));
+        // Only final/required-target checks enforce this. Historical inputs may have
+        // duplicate names until they have been relocated and assigned stable identities.
+        if (args.length > 1) {
+            var names = new HashSet<String>();
+            for (Patch<?> patch : patches) {
+                if (patch.getName() == null) continue;
+                boolean relevant = patch.getCompatibility() == null || patch.getCompatibility().stream().anyMatch(c ->
+                    c.getPackageName() == null || "com.twitter.android".equals(c.getPackageName()));
+                if (relevant && !names.add(patch.getName())) {
+                    throw new IllegalStateException("Duplicate NewX manager selection name: " + patch.getName());
+                }
+            }
+        }
         Set<Patch<?>> visited = Collections.newSetFromMap(new IdentityHashMap<>());
         for (Patch<?> patch : patches) checkDependencies(patch, visited);
         try (var zip = new ZipFile(args[0])) {
