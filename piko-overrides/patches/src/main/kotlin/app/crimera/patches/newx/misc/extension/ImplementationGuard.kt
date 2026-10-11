@@ -50,7 +50,7 @@ internal fun validateNewXImplementation(
             "NewX extension implementation does not support $packageName $versionName. " +
                 "Select only patches compatible with this APK; do not mix same-name " +
                 "patches for other versions or sources. Supported versions: " +
-                compatibility.targets.joinToString { it.version },
+                compatibility.targets.joinToString { it.version ?: "<any>" },
         )
     }
 }
