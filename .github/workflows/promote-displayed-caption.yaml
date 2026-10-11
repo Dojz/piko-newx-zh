@@ -5,6 +5,7 @@ on:
     paths: [.github/workflows/promote-displayed-caption.yaml]
 permissions:
   contents: write
+  actions: read
 concurrency:
   group: piko-newx-zh-release
   cancel-in-progress: false
@@ -13,20 +14,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Verify candidate provenance and download built bundles
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38107831285 --jq .conclusion)" = success
-          gh release view displayed-caption-check --repo "$GITHUB_REPOSITORY" --json body --jq .body | grep -F '99b1900b3cc7f2962b0e096108ca2c741d252702'
+          set -euo pipefail
+          git merge-base --is-ancestor 2a0d6a7d4636e7a8be4211e4366004e6dabdcb47 HEAD
+          git diff --exit-code 2a0d6a7d4636e7a8be4211e4366004e6dabdcb47 HEAD -- build_piko.py piko-overrides piko-patches translations compatibility build_compatible.py tests
+          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38109062427 --jq .conclusion)" = success
+          gh release view displayed-caption-check --repo "$GITHUB_REPOSITORY" --json body --jq .body | grep -F '2a0d6a7d4636e7a8be4211e4366004e6dabdcb47'
           mkdir bins
-          gh release download displayed-caption-check --repo "$GITHUB_REPOSITORY" -D bins --pattern '*.mpp' --pattern '*.json'
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/displayed-caption-check" > /tmp/candidate-release.json
+          python - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+          release = json.loads(Path('/tmp/candidate-release.json').read_text())
+          for asset in release['assets']:
+              name = asset['name']
+              if not name.endswith(('.mpp', '.json')): continue
+              assert Path(name).name == name
+              with (Path('bins') / name).open('wb') as output:
+                  subprocess.run(['gh', 'api', f"repos/{os.environ['GITHUB_REPOSITORY']}/releases/assets/{asset['id']}",
+                                  '-H', 'Accept: application/octet-stream'], stdout=output, check=True)
+          PY
           python - <<'PY'
           from pathlib import Path
           import hashlib, json
-          checksums = {'patches.mpp': '85611f72880f0b8fc8d07978815f5230e3236f918a816bf627fc5274d0f15fc7', 'patches-current.mpp': '4ac8c5636a6778baf2fee6d509bd617438344a0d14717d8b83caa8286d477e46', 'patches-legacy.mpp': 'b18fb6acde10dc92648aaf74ce22993f5c799bc210d8620824640abeeea161be', 'patches-bundle.json': 'fb191e3909f3825f4213ebe3aff3882354693a38de0f9477840dcfa1eb4ce8e1', 'compatibility-bundles.json': '275dd2bdbec9ed62913bd47be62285780ba88eadf17eac49ba18f6831ca5efc7', 'supported-versions.json': '31e606bdfa4de75ef878664b0fe9817703fc11a0b071928a23546bafb24bb589'}
+          checksums = {'compatibility-bundles.json': '35c72c7886c741e59f97fe2c7309f86604f3f5d50f633901b24d595e648750ae', 'patches-bundle.json': '9039d43297ffde0cdef2701649a2072f2e9176d23a79760835622da1ccf5bee4', 'patches-current.mpp': '36a9583da36c0eaba4e4cfd4d8e3f12a2d5352f25c2b4bc26d352cd47201c282', 'patches-legacy.mpp': 'ed7500c8bef4e8d6dc96ed4da40d53156c2cae7fec854e1a08dfc7bf25a07a19', 'patches.mpp': '4830bd66a38a8fc20e42f222b6648e0f3a2be67f525e64c317c5c020d9231427', 'supported-versions.json': '31e606bdfa4de75ef878664b0fe9817703fc11a0b071928a23546bafb24bb589'}
           for name, expected in checksums.items():
-              assert hashlib.sha256((Path('bins') / name).read_bytes()).hexdigest() == expected, name
+              actual = hashlib.sha256((Path('bins') / name).read_bytes()).hexdigest()
+              assert actual == expected, f'{name}: expected {expected}, got {actual}'
           for entry in json.loads(Path('bins/compatibility-bundles.json').read_text()):
               name = entry['download_url'].rsplit('/', 1)[1]
               path = Path('bins') / name
@@ -44,7 +63,7 @@ jobs:
         run: |
           gh release upload v3.54.2 bins/*.mpp bins/supported-versions.json compatibility-bundles.json --repo "$GITHUB_REPOSITORY" --clobber
           gh release edit v3.54.2 --repo "$GITHUB_REPOSITORY" --latest --title 'Piko 3.54.2' \
-            --notes '版本与上游 3.54.2 一致。{text} 使用点击下载时贴文当前显示的原文或译文，不发起翻译请求；命名完成后清理文字。新增外观中的经典蓝鸟图标及启动页切换、预览与确认。默认命名仍跟随上游。两套构建和命名、寄存器回归检查通过，统一包覆盖 15 个版本；12.28 原包修补及最终 DEX/清单检查通过。尚未进行手机运行实测。构建源：99b1900b3cc7f2962b0e096108ca2c741d252702。'
+            --notes '版本与上游 3.54.2 一致。{text} 使用点击下载时贴文当前显示的原文或译文，不发起翻译请求；命名完成后清理文字。新增外观中的经典蓝鸟图标及启动页切换、预览与确认。默认命名仍跟随上游。命名文字最多暂存 240 字节 UTF-8 前缀，重复刷新复用弱引用记录。两套构建和显示状态、命名、寄存器回归检查通过，统一包覆盖 15 个版本。尚未进行手机运行实测。构建源：2a0d6a7d4636e7a8be4211e4366004e6dabdcb47。'
       - name: Commit verified metadata
         run: |
           git config user.name 'github-actions[bot]'
