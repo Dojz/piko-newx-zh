@@ -21,10 +21,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          git merge-base --is-ancestor 2a0d6a7d4636e7a8be4211e4366004e6dabdcb47 HEAD
-          git diff --exit-code 2a0d6a7d4636e7a8be4211e4366004e6dabdcb47 HEAD -- build_piko.py piko-overrides piko-patches translations compatibility build_compatible.py tests
-          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38109062427 --jq .conclusion)" = success
-          gh release view displayed-caption-check --repo "$GITHUB_REPOSITORY" --json body --jq .body | grep -F '2a0d6a7d4636e7a8be4211e4366004e6dabdcb47'
+          git merge-base --is-ancestor e1618c110d2d8a22a0974866f70f6356271b9ec6 HEAD
+          git diff --exit-code e1618c110d2d8a22a0974866f70f6356271b9ec6 HEAD -- build_piko.py piko-overrides piko-patches translations compatibility build_compatible.py tests
+          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38113810881 --jq .conclusion)" = success
+          gh release view displayed-caption-check --repo "$GITHUB_REPOSITORY" --json body --jq .body | grep -F 'e1618c110d2d8a22a0974866f70f6356271b9ec6'
           mkdir bins
           gh api "repos/$GITHUB_REPOSITORY/releases/tags/displayed-caption-check" > /tmp/candidate-release.json
           python - <<'PY'
@@ -42,7 +42,7 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           import hashlib, json, os
-          checksums = {'compatibility-bundles.json': '35c72c7886c741e59f97fe2c7309f86604f3f5d50f633901b24d595e648750ae', 'patches-bundle.json': '9039d43297ffde0cdef2701649a2072f2e9176d23a79760835622da1ccf5bee4', 'patches-current.mpp': '36a9583da36c0eaba4e4cfd4d8e3f12a2d5352f25c2b4bc26d352cd47201c282', 'patches-legacy.mpp': 'ed7500c8bef4e8d6dc96ed4da40d53156c2cae7fec854e1a08dfc7bf25a07a19', 'patches.mpp': '4830bd66a38a8fc20e42f222b6648e0f3a2be67f525e64c317c5c020d9231427', 'supported-versions.json': '31e606bdfa4de75ef878664b0fe9817703fc11a0b071928a23546bafb24bb589'}
+          checksums = {'compatibility-bundles.json': 'e6f2693a95a44326b160a8b96eef3391177d676c0baf88acb05b616f09f7a710', 'patches-bundle.json': '53ca1804cb4ce0415e233f5e448bb82ef9ed85768582f1cfe7f09ad0e1ae25f9', 'patches-current.mpp': '43ed2f06f866ac8556fc25a7e241046291bd81ff0810b061f8b7b1bd239d4178', 'patches-legacy.mpp': 'fddf858866db76394e8a4b9318afa10e5eb0883bc4a44df4e23d6f7458772a8e', 'patches.mpp': 'e9c58ba84d7cca9d856c2b7f71f6a56a60a1a673b08d688edf1ceb5c2854c7f2', 'supported-versions.json': '31e606bdfa4de75ef878664b0fe9817703fc11a0b071928a23546bafb24bb589'}
           for name, expected in checksums.items():
               actual = hashlib.sha256((Path('bins') / name).read_bytes()).hexdigest()
               assert actual == expected, f'{name}: expected {expected}, got {actual}'
@@ -72,7 +72,7 @@ jobs:
         run: |
           gh release upload v3.54.2 bins/*.mpp bins/supported-versions.json compatibility-bundles.json --repo "$GITHUB_REPOSITORY" --clobber
           gh release edit v3.54.2 --repo "$GITHUB_REPOSITORY" --latest --title 'Piko 3.54.2' \
-            --notes '版本与上游 3.54.2 一致。{text} 使用点击下载时贴文当前显示的原文或译文，不发起翻译请求；命名完成后清理文字。新增外观中的经典蓝鸟图标及启动页切换、预览与确认。默认命名仍跟随上游。命名文字最多暂存 240 字节 UTF-8 前缀，重复刷新复用弱引用记录。两套构建和显示状态、命名、寄存器回归检查通过，统一包覆盖 15 个版本。尚未进行手机运行实测。构建源：2a0d6a7d4636e7a8be4211e4366004e6dabdcb47。'
+            --notes '修复图标补丁的启动入口识别：支持 Activity 与别名、Android XML 属性命名空间，以及重复资源配置。版本与上游 3.54.2 一致。{text} 使用点击下载时贴文当前显示的原文或译文，不发起翻译请求；命名完成后清理文字。新增外观中的经典蓝鸟图标及启动页切换、预览与确认。默认命名仍跟随上游。命名文字最多暂存 240 字节 UTF-8 前缀，重复刷新复用弱引用记录。两套构建和显示状态、命名、寄存器回归检查通过，统一包覆盖 15 个版本。12.28 原包内部修补与 APK 清单检查通过；尚未进行手机运行实测。构建源：e1618c110d2d8a22a0974866f70f6356271b9ec6。'
       - name: Commit verified metadata
         run: |
           git config user.name 'github-actions[bot]'
