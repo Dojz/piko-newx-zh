@@ -26,6 +26,15 @@ implementation's production target.
 loaders in a final APK. It rejects the observed mixed layout. Correctly selected
 patches must retain a single settings implementation and startup loader.
 
+Both pinned implementation builds and their test suites passed. The unified
+bundle retains version 3.54.2 and 15 supported app targets. Internal integration
+checks with Morphe Desktop 1.18.1 patched an unmodified 12.28.0-prod.01 input
+using the unified bundle, with the default patches and with Browse tweet object
+enabled. Both resulting APKs passed the single implementation/startup check.
+Forcing the current implementation on that target and applying the legacy
+implementation to the observed mixed APK each failed at the guard and produced
+no output APK.
+
 The fix does not repair an already patched APK. Use an unmodified input, one
 source, and the patches declared compatible with its version. Device startup
-and feature behavior require a subsequent runtime test.
+and feature behavior have not been tested and require a subsequent runtime test.

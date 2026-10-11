@@ -1,0 +1,87 @@
+name: Promote verified NewX extension compatibility guard
+on:
+  push:
+    branches: [codex/extension-compatibility-guard]
+    paths: [.github/workflows/promote-extension-compatibility.yaml]
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: piko-newx-zh-release
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify candidate provenance and download built bundles
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor 113432319dfd8a1db20b1f9a040c14efffd0bb16 HEAD
+          git diff --exit-code 113432319dfd8a1db20b1f9a040c14efffd0bb16 HEAD -- build_piko.py piko-overrides piko-patches translations compatibility build_compatible.py tests
+          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38121991323 --jq .conclusion)" = success
+          test "$(gh api repos/$GITHUB_REPOSITORY/actions/runs/38121991323 --jq .head_sha)" = 113432319dfd8a1db20b1f9a040c14efffd0bb16
+          gh release view settings-compatibility-check --repo "$GITHUB_REPOSITORY" --json body --jq .body | grep -F '113432319dfd8a1db20b1f9a040c14efffd0bb16'
+          mkdir bins
+          gh api "repos/$GITHUB_REPOSITORY/releases/tags/settings-compatibility-check" > /tmp/candidate-release.json
+          python - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+          release = json.loads(Path('/tmp/candidate-release.json').read_text())
+          for asset in release['assets']:
+              name = asset['name']
+              if not name.endswith(('.mpp', '.json')): continue
+              assert Path(name).name == name
+              with (Path('bins') / name).open('wb') as output:
+                  subprocess.run(['gh', 'api', f"repos/{os.environ['GITHUB_REPOSITORY']}/releases/assets/{asset['id']}",
+                                  '-H', 'Accept: application/octet-stream'], stdout=output, check=True)
+          PY
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json, os
+          checksums = {'compatibility-bundles.json': '75b52e80dd046cfd92992174d63a6e38171b8a2c746cae216c5c437031d3f9a3', 'patches-bundle.json': 'a2640d28d3f26907920a25c85f33fd37469b4f080520ef20815af6cd509b04c7', 'patches-current-e20c91a9d9f1091b4d9844a6a64f28ac0b2ea86f366679c764d5d3f02443695f.mpp': 'e20c91a9d9f1091b4d9844a6a64f28ac0b2ea86f366679c764d5d3f02443695f', 'patches-current.mpp': 'e20c91a9d9f1091b4d9844a6a64f28ac0b2ea86f366679c764d5d3f02443695f', 'patches-legacy-a736bff2a0f75f32794526410f2763aa29b1c0e941818766948494729315a2d3.mpp': 'a736bff2a0f75f32794526410f2763aa29b1c0e941818766948494729315a2d3', 'patches-legacy.mpp': 'a736bff2a0f75f32794526410f2763aa29b1c0e941818766948494729315a2d3', 'patches.mpp': '7e9a9f9f84af6235357d6659cd6708e3a5a9852f7063154f302ae9e996f3bf5e', 'supported-versions.json': '31e606bdfa4de75ef878664b0fe9817703fc11a0b071928a23546bafb24bb589'}
+          for name, expected in checksums.items():
+              actual = hashlib.sha256((Path('bins') / name).read_bytes()).hexdigest()
+              assert actual == expected, f'{name}: expected {expected}, got {actual}'
+          prefix = f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/releases/download/v3.54.2/"
+          history = json.loads(Path('bins/compatibility-bundles.json').read_text())
+          for entry in history:
+              # Historical releases may reuse the same basename; compare only this release's assets.
+              if not entry['download_url'].startswith(prefix): continue
+              name = entry['download_url'].rsplit('/', 1)[1]
+              path = Path('bins') / name
+              if path.exists(): assert hashlib.sha256(path.read_bytes()).hexdigest() == entry['sha256'], name
+          for name in ('patches-current.mpp', 'patches-legacy.mpp'):
+              checksum = checksums[name]
+              immutable = f'{Path(name).stem}-{checksum}.mpp'
+              assert any(entry['download_url'] == prefix + immutable and entry['sha256'] == checksum for entry in history)
+              assert hashlib.sha256((Path('bins') / immutable).read_bytes()).hexdigest() == checksum
+          metadata = json.loads(Path('bins/patches-bundle.json').read_text())
+          assert metadata['version'] == metadata['upstream_version'] == 'v3.54.2'
+          assert metadata['piko_commit'] == '9abde9777d92af50fe1a53634262498fb630d7d3'
+          assert len(metadata['supported_versions']) == 15
+          Path('patches-bundle.json').write_bytes(Path('bins/patches-bundle.json').read_bytes())
+          Path('compatibility-bundles.json').write_bytes(Path('bins/compatibility-bundles.json').read_bytes())
+          PY
+      - name: Update official-version release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload v3.54.2 bins/*.mpp bins/supported-versions.json compatibility-bundles.json --repo "$GITHUB_REPOSITORY" --clobber
+          gh release edit v3.54.2 --repo "$GITHUB_REPOSITORY" --latest --title 'Piko 3.54.2' \
+            --notes '阻止不兼容的 NewX 扩展实现混选和已有设置初始化的 APK 重复修补，避免旧版与新版设置注册器共同初始化造成启动闪退。版本保持上游 3.54.2，统一包保留 15 个版本；当前显示文字命名、经典蓝鸟图标与启动页保留。两套构建与回归检查通过；12.28 原包内部修补及单一设置初始化检查通过，错误版本强制选择及重复修补已验证会被拦截。尚未进行手机运行实测。构建源：113432319dfd8a1db20b1f9a040c14efffd0bb16。'
+      - name: Commit verified metadata
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add patches-bundle.json compatibility-bundles.json
+          git commit -m 'Update verified extension compatibility bundle metadata [skip ci]'
+          git push origin HEAD:codex/extension-compatibility-guard
+      - name: Remove temporary validation release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release delete settings-compatibility-check --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes
