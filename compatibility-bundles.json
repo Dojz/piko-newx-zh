@@ -136,5 +136,11 @@
     "download_url": "https://github.com/Dojz/piko-newx-zh/releases/download/v3.56.1/patches-current-558858bf11af710304ffa890fa6c0f9247fe9c57af7b9463752c322858cc08ef.mpp",
     "sha256": "558858bf11af710304ffa890fa6c0f9247fe9c57af7b9463752c322858cc08ef",
     "piko_commit": "94d42e6c87ea157f8b41fe7effe3c92c426cd5ad"
+  },
+  {
+    "version": "v3.57.0",
+    "download_url": "https://github.com/Dojz/piko-newx-zh/releases/download/v3.57.0/patches-current-c95ad2dc1cc862f2fc24b084db83236b5b662aa289019d5e43e78463bcf6a461.mpp",
+    "sha256": "c95ad2dc1cc862f2fc24b084db83236b5b662aa289019d5e43e78463bcf6a461",
+    "piko_commit": "14365593bf5f7f1b68b0588ba09dc36485e3658f"
   }
 ]

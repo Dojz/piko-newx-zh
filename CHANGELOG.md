@@ -1,3 +1,8 @@
+## [3.57.0](https://github.com/Dojz/piko-newx-zh/compare/v3.56.1...v3.57.0) (2026-10-16)
+
+### New Patches
+* NewX: Log HLS audio renditions
+
 ## [3.56.1](https://github.com/Dojz/piko-newx-zh/compare/v3.56.0...v3.56.1) (2026-10-12)
 
 * No new patches or commits.
