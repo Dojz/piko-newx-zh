@@ -1,3 +1,7 @@
+## [3.58.0](https://github.com/Dojz/piko-newx-zh/compare/v3.57.1...v3.58.0) (2026-10-18)
+
+* No new patches or commits.
+
 ## [3.57.1](https://github.com/Dojz/piko-newx-zh/compare/v3.57.0...v3.57.1) (2026-10-17)
 
 * No new patches or commits.
