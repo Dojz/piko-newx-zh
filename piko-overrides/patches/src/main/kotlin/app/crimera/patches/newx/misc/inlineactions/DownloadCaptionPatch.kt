@@ -19,8 +19,6 @@ import app.morphe.patcher.string
 import app.morphe.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.util.cloneMutable
-import app.morphe.util.p0Register
-import app.morphe.util.numberOfParameterRegisters
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
@@ -32,6 +30,15 @@ import com.android.tools.smali.dexlib2.immutable.instruction.ImmutableInstructio
 private const val EXTENSION = "Lapp/morphe/extension/newx/misc/DownloadCaption;"
 private const val OBJECT = "Ljava/lang/Object;"
 private const val STRING = "Ljava/lang/String;"
+
+// Keep the DEX register contract independent of the patcher utility package.
+internal val MutableMethod.captionParameterRegisterCount: Int
+    get() = (if (AccessFlags.STATIC.isSet(accessFlags)) 0 else 1) +
+        parameterTypes.sumOf { if (it.toString() == "J" || it.toString() == "D") 2 else 1 }
+
+internal val MutableMethod.captionP0Register: Int
+    get() = (implementation ?: throw PatchException("NewX caption method has no implementation"))
+        .registerCount - captionParameterRegisterCount
 
 context(_: BytecodePatchContext)
 private fun anchor(scope: String, vararg labels: String): Match = requireExactlyOne(
@@ -77,11 +84,11 @@ internal fun MutableMethod.withDownloadCaptionHooks(
     // cannot affect this frame. No hooks or branch-label relocation are needed inside the body.
     val entry = MutableMethod(ImmutableMethod(
         definingClass, name, parameters, returnType, accessFlags, annotations, hiddenApiRestrictions,
-        ImmutableMethodImplementation(numberOfParameterRegisters + 2,
+        ImmutableMethodImplementation(captionParameterRegisterCount + 2,
             listOf(ImmutableInstruction11x(Opcode.RETURN_OBJECT, 1)), emptyList(), emptyList()),
     ))
-    val arguments = mutableListOf(entry.p0Register)
-    var parameter = entry.p0Register + 1
+    val arguments = mutableListOf(entry.captionP0Register)
+    var parameter = entry.captionP0Register + 1
     parameterTypes.forEach { type ->
         arguments.add(parameter)
         parameter += if (type.toString() in listOf("J", "D")) 2 else 1
@@ -89,7 +96,7 @@ internal fun MutableMethod.withDownloadCaptionHooks(
     entry.insertHook(0, relocateBranchTargets = false) {
         invokeDirect(body, *arguments.toIntArray())
         moveResult(1, returnType)
-        move(0, entry.p0Register, OBJECT)
+        move(0, entry.captionP0Register, OBJECT)
         iput(1, 0, renderedStateField)
         iget(0, 0, postField)
         invokeStatic(methodReference("$EXTENSION->record($OBJECT$OBJECT)V"), 0, 1)
@@ -123,7 +130,7 @@ internal val newXDownloadCaptionPatch = bytecodePatch {
 
         helper("stateText", 2).apply {
             insertHook(0, relocateBranchTargets = false) {
-                move(0, p0Register, OBJECT)
+                move(0, captionP0Register, OBJECT)
                 instanceOf(1, 0, grok.originalMethod.definingClass)
                 ifEqz(1, Target.Local("standard"))
                 checkCast(0, grok.originalMethod.definingClass)

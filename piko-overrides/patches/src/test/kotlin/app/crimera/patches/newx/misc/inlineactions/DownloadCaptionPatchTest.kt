@@ -4,7 +4,6 @@ import app.crimera.bytecode.fieldReference
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import app.morphe.patcher.util.smali.toInstruction
-import app.morphe.util.p0Register
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction
@@ -75,9 +74,9 @@ class DownloadCaptionPatchTest {
     private fun execute(method: MutableMethod, flag: Int, expectRecord: Boolean, body: MutableMethod? = null): Any? {
         val implementation = assertNotNull(method.implementation)
         val registers = arrayOfNulls<Any>(implementation.registerCount)
-        registers[method.p0Register] = "presenter"
-        registers[method.p0Register + 1] = "composer"
-        registers[method.p0Register + 2] = flag
+        registers[method.captionP0Register] = "presenter"
+        registers[method.captionP0Register + 1] = "composer"
+        registers[method.captionP0Register + 2] = flag
         val instructions = method.instructions.toList()
         var index = 0
         var recorded = 0
