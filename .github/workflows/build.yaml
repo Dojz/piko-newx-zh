@@ -42,7 +42,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsSL https://raw.githubusercontent.com/crimera/piko-newx/main/patches-bundle.json -o /tmp/upstream.json
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            cp patches-bundle.json /tmp/upstream.json
+          else
+            curl -fsSL https://raw.githubusercontent.com/crimera/piko-newx/main/patches-bundle.json -o /tmp/upstream.json
+          fi
           VERSION=$(jq -r '.version' /tmp/upstream.json)
           APP_VERSION=$(jq -r '.app_version' /tmp/upstream.json)
           PIKO_COMMIT=$(jq -r '.piko_commit' /tmp/upstream.json)
