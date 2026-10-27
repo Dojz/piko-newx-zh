@@ -433,6 +433,8 @@ def build_piko_patches(
         apply_zh_cn(piko_directory)
         apply_download_caption_patch(piko_directory)
         apply_native_download_translation(piko_directory)
+        from quick_download import install as install_quick_download
+        install_quick_download(piko_directory)
 
         if os.environ.get("PIKO_VALIDATE"):
             subprocess.run(["python", str(REPO_ROOT / "tests/check_download_filename.py"), str(piko_directory)], check=True)

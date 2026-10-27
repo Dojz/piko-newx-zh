@@ -97,6 +97,22 @@ def assemble_compatible_bundle(
             supported = targets(checker, bundle)
             if supported <= covered:
                 continue
+            # Retain each implementation's original app targets, but rebuild it with
+            # the common feature overlays instead of shipping an unchanged old extension.
+            from build_piko import build_piko_patches
+            previous_commit = os.environ.get("PIKO_COMMIT")
+            try:
+                os.environ["PIKO_COMMIT"] = entry["piko_commit"]
+                rebuilt_bundle = directory / f"{entry['sha256']}-quick-download.mpp"
+                build_piko_patches(str(rebuilt_bundle), patch_version=version)
+            finally:
+                if previous_commit is None:
+                    os.environ.pop("PIKO_COMMIT", None)
+                else:
+                    os.environ["PIKO_COMMIT"] = previous_commit
+            if targets(checker, rebuilt_bundle) != supported:
+                raise ValueError("Rebuilt retained implementation changed its app targets")
+            bundle = rebuilt_bundle
             relocated = directory / f"{entry['sha256']}.jar"
             run([
                 *relocator, str(bundle), str(relocated), "h" + entry["sha256"][:12],
