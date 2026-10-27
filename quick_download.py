@@ -81,6 +81,13 @@ def install(piko: Path) -> None:
 """ + anchor)
     path.write_text(source)
 
+    # The existing settings page can display native destinations without a revoked-SAF warning.
+    path = root / "DownloadOptionsFragment.java"
+    source = replace(path.read_text(), "        switch (" + folders + ".destinationState(context, kind)) {",
+                     '        if (QuickDownloadOptions.nativeSavedFolder(kind.name())) return path;\n'
+                     + "        switch (" + folders + ".destinationState(context, kind)) {")
+    path.write_text(source)
+
     # An invalid one-shot destination must not clear an unrelated saved destination.
     path = root / (folders + ".java")
     source = replace(path.read_text(), "public static void invalidate(MediaKind kind) {",

@@ -48,6 +48,9 @@ public class FilenameCheck {
   equal("甲_乙",DownloadFileName.sanitizeSegment("甲\u0000乙",null));
   equal("fallback",DownloadFileName.sanitizeSegment("\n\t\u2028","fallback"));
   DownloadFileName.PostContext post=DownloadFileName.PostContext.sample();
+  if(DownloadFileName.validate("{downloadTimestamp}").outcome!=DownloadFileName.Outcome.OK)throw new AssertionError("Native timestamp rejected");
+  equal(post.downloadTimestamp+".jpg",DownloadFileName.render("{downloadTimestamp}",post,0,1,"jpg"));
+  if(!DownloadFileName.render("{downloadTimestamp}",post,0,1,"jpg").matches("[0-9]{8}_[0-9]{6}[.]jpg"))throw new AssertionError("Native timestamp format");
   post.text="原文\r\n第二行";
   equal("原文 第二行.jpg",DownloadFileName.render("{text}",post,0,1,"jpg"));
   post.text="译文\n第二行";

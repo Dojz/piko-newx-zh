@@ -64,6 +64,10 @@ public final class QuickDownloadOptions {
     static void end() { CURRENT.remove(); TEMPORARY.remove(); }
     static boolean isTemporary() { return Boolean.TRUE.equals(TEMPORARY.get()); }
 
+    static boolean nativeSavedFolder(String kind) {
+        return saved().nativeFolder("VIDEOS".equals(kind));
+    }
+
     static boolean nativeFolder(String kind) {
         QuickDownloadState.Values current = CURRENT.get();
         if (current == null) current = STATE.peek(saved());

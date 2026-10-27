@@ -2,13 +2,6 @@ name: Long-press download validation
 on:
   push:
     branches: [codex/long-press-download-options]
-  pull_request:
-    paths:
-      - "quick_download.py"
-      - "piko-overrides/**/QuickDownload*.java"
-      - "tests/check_quick_download.py"
-      - "build_piko.py"
-      - "build_compatible.py"
   workflow_dispatch:
 permissions:
   contents: read
